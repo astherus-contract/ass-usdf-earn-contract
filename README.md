@@ -94,7 +94,7 @@ npx hardhat deploy --network bscTestnet --tags WithdrawVaultVerify
 ```
 
 ```shell
-npx hardhat deploy --network bscTestnet --tags EarnVerify
+npx hardhat deploy --network bscTestnet --tags USDPEarnVerify
 ```
 
 # 合约升级

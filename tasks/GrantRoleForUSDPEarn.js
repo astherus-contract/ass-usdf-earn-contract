@@ -4,10 +4,10 @@ const prompt = require('prompt-sync')();
 require("@nomicfoundation/hardhat-toolbox");
 
 //BOT_ROLE
-const role='0x6d5c9827c1f410bbb61d3b2a0a34b6b30492d9a1fd38588edca7ec4562ab9c9b'
+const role='0x0000000000000000000000000000000000000000000000000000000000000000'
 
 //bot地址
-const address = '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe';
+const address = '0xe829a87F4Dfa41B032D8B6Feca6C2213d6ee1861';
 
 task("grantRole:USDPEarn", "grantRole for earn")
     .setAction(async ({facets}) => {

@@ -48,14 +48,13 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _timeLockAddress, address _USDTAddress, address _USDPAddress) {
         require(_timeLockAddress != address(0), "timeLockAddress cannot be a zero address");
-        TIMELOCK_ADDRESS = _timeLockAddress;
-        _disableInitializers();
-
         require(_USDTAddress != address(0), "USDTAddress cannot be a zero address");
         require(_USDPAddress != address(0), "USDPAddress cannot be a zero address");
 
+        TIMELOCK_ADDRESS = _timeLockAddress;
         USDTAddress = _USDTAddress;
         USDPAddress = _USDPAddress;
+        _disableInitializers();
         emit AddToken(USDPAddress, USDTAddress);
     }
 
@@ -94,8 +93,6 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
     function updateCommissionRate(uint256 _commissionRate) external onlyRole(ADMIN_ROLE) {
-        require(_commissionRate > 0, "commissionRate cannot be a zero");
-
         uint256 oldCommissionRate = commissionRate;
         require(oldCommissionRate != _commissionRate, "newCommissionRate can not be equal oldCommissionRate");
 
@@ -149,12 +146,9 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
 
         amountIn = _transferToVault(msg.sender, USDTAddress, amountIn);
 
-        uint256 commission = amountIn/commissionRate;
-        require(commission > 0, "invalid amount");
-
         IERC20 erc20 = IERC20(USDPAddress);
         uint256 totalSupply = erc20.totalSupply();
-        uint256 USDPAmount = amountIn - commission;
+        uint256 USDPAmount =  amountIn * (1e4 - commissionRate) / 1e4;
         require(totalSupply + USDPAmount <= USDPMaxSupply, "The amount is too large");
 
         IAs(USDPAddress).mint(msg.sender, USDPAmount);
