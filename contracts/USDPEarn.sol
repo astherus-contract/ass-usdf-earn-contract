@@ -140,6 +140,8 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
       * @dev mint USDP token
       */
     function _mintUSDP(uint256 amountIn) private {
+        require(USDTAddress != address(0), "USDTAddress cannot be a zero address");
+
         require(amountIn > 0, "invalid amount");
         require(USDTDepositEnabled == true, "Deposit is paused");
         require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
