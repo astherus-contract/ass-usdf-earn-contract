@@ -93,6 +93,9 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
     function updateCommissionRate(uint256 _commissionRate) external onlyRole(ADMIN_ROLE) {
+        require(_commissionRate >= 0, "commissionRate cannot less than zero");
+        require(_commissionRate <= 1e4, "commissionRate cannot greater than 10000");
+
         uint256 oldCommissionRate = commissionRate;
         require(oldCommissionRate != _commissionRate, "newCommissionRate can not be equal oldCommissionRate");
 
@@ -129,22 +132,20 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
 
-    function deposit(address _USDTAddress, uint256 amountIn) external nonReentrant whenNotPaused {
-        _mintUSDP(_USDTAddress, amountIn);
+    function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
+        _mintUSDP(amountIn);
     }
 
     /**
       * @dev mint USDP token
       */
-    function _mintUSDP(address _USDTAddress, uint256 amountIn) private {
-        require(_USDTAddress != address(0), "USDTAddress cannot be a zero address");
-        require(USDTAddress == _USDTAddress, "USDTAddress cannot be supported");
-
+    function _mintUSDP(uint256 amountIn) private {
         require(amountIn > 0, "invalid amount");
         require(USDTDepositEnabled == true, "Deposit is paused");
         require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
 
-        amountIn = _transferToVault(msg.sender, USDTAddress, amountIn);
+        uint256 resultAmountIn = _transferToVault(msg.sender, USDTAddress, amountIn);
+        require(resultAmountIn == amountIn, "Amount not matched");
 
         IERC20 erc20 = IERC20(USDPAddress);
         uint256 totalSupply = erc20.totalSupply();
