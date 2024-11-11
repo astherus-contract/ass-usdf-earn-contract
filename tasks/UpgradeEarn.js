@@ -5,8 +5,8 @@ require("@nomicfoundation/hardhat-toolbox");
 
 task("upgrade:Earn", "update Earn contract")
     .setAction(async ({facets}) => {
-        const Earn = await ethers.getContract('Earn')
-        const EarnImplementation = await ethers.getContract('Earn_Implementation');
+        const Earn = await ethers.getContract('USDPEarn')
+        const EarnImplementation = await ethers.getContract('USDPEarn_Implementation');
         const Timelock = await ethers.getContract('Timelock');
         const provider = new ethers.providers.JsonRpcProvider(network.config.url);
 

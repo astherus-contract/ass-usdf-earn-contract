@@ -43,6 +43,7 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     bool public USDTDepositEnabled;
     address public ceffuAddress;
     bool public transferToCeffuEnabled;
+    uint256 public commissionRate2;
 
 
     /// @custom:oz-upgrades-unsafe-allow constructor

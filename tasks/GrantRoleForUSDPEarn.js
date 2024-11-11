@@ -4,7 +4,7 @@ const prompt = require('prompt-sync')();
 require("@nomicfoundation/hardhat-toolbox");
 
 //BOT_ROLE
-const role='0x144dc67236c5b8b129f92a31bb5cba2a9c107df2d9bcedef0515ca3f60ecb794'
+const role='0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775'
 
 //bot地址
 const address = '0xE90F9596e3Bfd49e9f4c2E0eA48830DC47e6997b';
