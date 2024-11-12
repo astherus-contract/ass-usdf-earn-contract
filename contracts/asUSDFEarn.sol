@@ -99,12 +99,12 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         require(amountIn > 0, "invalid amount");
 
         amountIn = _transferToVault(msg.sender, USDFAddress, amountIn);
-        uint256 exchangePrice = exchangePrice();
-        uint256 asUSDFAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchangePrice;
+        uint256 exchange_price = exchangePrice();
+        uint256 asUSDFAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchange_price;
         require(asUSDFAmount > 0, "invalid amount");
 
         IAs(asUSDFAddress).mint(msg.sender, asUSDFAmount);
-        emit MintasUSDF(msg.sender, USDFAddress, asUSDFAddress, amountIn, asUSDFAmount, exchangePrice);
+        emit MintasUSDF(msg.sender, USDFAddress, asUSDFAddress, amountIn, asUSDFAmount, exchange_price);
     }
 
 
@@ -131,8 +131,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
             return EXCHANGE_PRICE_DECIMALS;
         }
 
-        uint256 exchangePrice = (USDFBalance * EXCHANGE_PRICE_DECIMALS) / totalSupply;
-        return exchangePrice ;
+        return (USDFBalance * EXCHANGE_PRICE_DECIMALS) / totalSupply;
     }
     
 
