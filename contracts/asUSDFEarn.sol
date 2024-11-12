@@ -14,7 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "./interface/IAs.sol";
 
 
-contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable {
+contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable {
 
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -26,29 +26,29 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     using Address for address payable;
     using SafeERC20 for IERC20;
 
-    event AddToken(address indexed asUSDPAddress, address indexed USDPAddress);
-    event UpdateUSDPDepositEnabled(bool oldUSDPDepositEnabled, bool newUSDPDepositEnabled);
-    event MintasUSDP(address indexed sender, address indexed USDPAddress, address indexed asUSDPAddress, uint256 amountIn, uint256 asUSDPAmount, uint256 exchangePrice);
+    event AddToken(address indexed asUSDFAddress, address indexed USDFAddress);
+    event UpdateUSDFDepositEnabled(bool oldUSDFDepositEnabled, bool newUSDFDepositEnabled);
+    event MintasUSDF(address indexed sender, address indexed USDFAddress, address indexed asUSDFAddress, uint256 amountIn, uint256 asUSDFAmount, uint256 exchangePrice);
 
     address public immutable TIMELOCK_ADDRESS;
 
-    address public immutable USDPAddress;
-    address public immutable asUSDPAddress;
+    address public immutable USDFAddress;
+    address public immutable asUSDFAddress;
 
-    bool public USDPDepositEnabled;
+    bool public USDFDepositEnabled;
 
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address timeLockAddress, address _USDPAddress, address _asUSDPAddress) {
+    constructor(address timeLockAddress, address _USDFAddress, address _asUSDFAddress) {
         require(timeLockAddress != address(0), "timeLockAddress cannot be a zero address");
-        require(_USDPAddress != address(0), "USDPAddress cannot be a zero address");
-        require(_asUSDPAddress != address(0), "asUSDPAddress cannot be a zero address");
+        require(_USDFAddress != address(0), "USDFAddress cannot be a zero address");
+        require(_asUSDFAddress != address(0), "asUSDFAddress cannot be a zero address");
 
         TIMELOCK_ADDRESS = timeLockAddress;
-        USDPAddress = _USDPAddress;
-        asUSDPAddress = _asUSDPAddress;
+        USDFAddress = _USDFAddress;
+        asUSDFAddress = _asUSDFAddress;
         _disableInitializers();
-        emit AddToken(asUSDPAddress, USDPAddress);
+        emit AddToken(asUSDFAddress, USDFAddress);
     }
 
     modifier onlyTimeLock() {
@@ -80,31 +80,31 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
 
 
     function updateDepositEnabled(bool enabled) external onlyRole(ADMIN_ROLE) {
-        bool oldUSDPDepositEnabled = USDPDepositEnabled;
-        require(oldUSDPDepositEnabled != enabled, "newUSDPDepositEnabled can not be equal oldUSDPDepositEnabled");
+        bool oldUSDFDepositEnabled = USDFDepositEnabled;
+        require(oldUSDFDepositEnabled != enabled, "newUSDFDepositEnabled can not be equal oldUSDFDepositEnabled");
 
-        USDPDepositEnabled = enabled;
-        emit UpdateUSDPDepositEnabled( oldUSDPDepositEnabled, USDPDepositEnabled);
+        USDFDepositEnabled = enabled;
+        emit UpdateUSDFDepositEnabled( oldUSDFDepositEnabled, USDFDepositEnabled);
     }
 
     function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
-        _mintasUSDP(amountIn);
+        _mintasUSDF(amountIn);
     }
 
 
-    function _mintasUSDP(uint256 amountIn) private {
-        require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
-        require(asUSDPAddress != address(0), "asUSDPAddress cannot be a zero address");
-        require(USDPDepositEnabled == true, "Deposit is paused");
+    function _mintasUSDF(uint256 amountIn) private {
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+        require(asUSDFAddress != address(0), "asUSDFAddress cannot be a zero address");
+        require(USDFDepositEnabled == true, "Deposit is paused");
         require(amountIn > 0, "invalid amount");
 
-        amountIn = _transferToVault(msg.sender, USDPAddress, amountIn);
+        amountIn = _transferToVault(msg.sender, USDFAddress, amountIn);
         uint256 exchangePrice = exchangePrice();
-        uint256 asUSDPAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchangePrice;
-        require(asUSDPAmount > 0, "invalid amount");
+        uint256 asUSDFAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchangePrice;
+        require(asUSDFAmount > 0, "invalid amount");
 
-        IAs(asUSDPAddress).mint(msg.sender, asUSDPAmount);
-        emit MintasUSDP(msg.sender, USDPAddress, asUSDPAddress, amountIn, asUSDPAmount, exchangePrice);
+        IAs(asUSDFAddress).mint(msg.sender, asUSDFAmount);
+        emit MintasUSDF(msg.sender, USDFAddress, asUSDFAddress, amountIn, asUSDFAmount, exchangePrice);
     }
 
 
@@ -116,22 +116,22 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function exchangePrice() public view returns (uint256){
-        require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
-        require(asUSDPAddress != address(0), "asUSDPAddress cannot be a zero address");
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+        require(asUSDFAddress != address(0), "asUSDFAddress cannot be a zero address");
 
-        IERC20 USDPToken = IERC20(USDPAddress);
-        uint256 USDPBalance = USDPToken.balanceOf(address(this));
+        IERC20 USDFToken = IERC20(USDFAddress);
+        uint256 USDFBalance = USDFToken.balanceOf(address(this));
 
-        IERC20 asUSDPToken = IERC20(asUSDPAddress);
-        uint256 totalSupply = asUSDPToken.totalSupply();
+        IERC20 asUSDFToken = IERC20(asUSDFAddress);
+        uint256 totalSupply = asUSDFToken.totalSupply();
         if (totalSupply <= 0){
             return EXCHANGE_PRICE_DECIMALS;
         }
-        if (USDPBalance <= 0){
+        if (USDFBalance <= 0){
             return EXCHANGE_PRICE_DECIMALS;
         }
 
-        uint256 exchangePrice = (USDPBalance * EXCHANGE_PRICE_DECIMALS) / totalSupply;
+        uint256 exchangePrice = (USDFBalance * EXCHANGE_PRICE_DECIMALS) / totalSupply;
         return exchangePrice ;
     }
     
