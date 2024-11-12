@@ -122,8 +122,8 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         IERC20 USDPToken = IERC20(USDPAddress);
         uint256 USDPBalance = USDPToken.balanceOf(address(this));
 
-        IERC20 asUSDP = IERC20(asUSDPAddress);
-        uint256 totalSupply = asUSDP.totalSupply();
+        IERC20 asUSDPToken = IERC20(asUSDPAddress);
+        uint256 totalSupply = asUSDPToken.totalSupply();
         if (totalSupply <= 0){
             return EXCHANGE_PRICE_DECIMALS;
         }
