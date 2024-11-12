@@ -99,7 +99,7 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         require(amountIn > 0, "invalid amount");
 
         amountIn = _transferToVault(msg.sender, USDPAddress, amountIn);
-        uint256 exchangePrice = _exchangePrice();
+        uint256 exchangePrice = exchangePrice();
         uint256 asUSDPAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchangePrice;
         require(asUSDPAmount > 0, "invalid amount");
 
@@ -115,7 +115,7 @@ contract asUSDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         return erc20.balanceOf(address(this)) - before;
     }
 
-    function _exchangePrice() public view returns (uint256){
+    function exchangePrice() public view returns (uint256){
         require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
         require(asUSDPAddress != address(0), "asUSDPAddress cannot be a zero address");
 
