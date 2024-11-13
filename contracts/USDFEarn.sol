@@ -14,7 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "./interface/IAs.sol";
 
 
-contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable {
+contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
@@ -26,36 +26,36 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
 
     event AddToken(address indexed asTokenAddress, address indexed sourceTokenAddress);
     event UpdateUSDTDepositEnabled(bool oldUSDTDepositEnabled, bool newUSDTDepositEnabled);
-    event UpdateUSDPMaxSupply(uint256 oldUSDPMaxSupply, uint256 newUSDPMaxSupply);
+    event UpdateUSDFMaxSupply(uint256 oldUSDFMaxSupply, uint256 newUSDFMaxSupply);
     event UpdateCommissionRate(uint256 oldCommissionRate, uint256 newCommissionRate);
     event UpdateCeffuAddress(address oldCeffuAddress, address newCeffuAddress);
     event UpdateTransferToCeffuEnabled(bool oldTransferToCeffuEnabled, bool newTransferToCeffuEnabled);
     event TransferToCeffu(address indexed USDTAddress, uint256 USDTAmount, address ceffuAddress);
 
-    event MintUSDP(address indexed sender, address indexed USDTAddress, address indexed USDPAddress, uint256 amountIn, uint256 USDPAmount);
+    event MintUSDF(address indexed sender, address indexed USDTAddress, address indexed USDFAddress, uint256 amountIn, uint256 USDFAmount);
 
     address public immutable TIMELOCK_ADDRESS;
 
     address public immutable USDTAddress;
-    address public immutable USDPAddress;
+    address public immutable USDFAddress;
     uint256 public commissionRate;
-    uint256 public USDPMaxSupply;
+    uint256 public USDFMaxSupply;
     bool public USDTDepositEnabled;
     address public ceffuAddress;
     bool public transferToCeffuEnabled;
 
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _timeLockAddress, address _USDTAddress, address _USDPAddress) {
+    constructor(address _timeLockAddress, address _USDTAddress, address _USDFAddress) {
         require(_timeLockAddress != address(0), "timeLockAddress cannot be a zero address");
         require(_USDTAddress != address(0), "USDTAddress cannot be a zero address");
-        require(_USDPAddress != address(0), "USDPAddress cannot be a zero address");
+        require(_USDFAddress != address(0), "USDFAddress cannot be a zero address");
 
         TIMELOCK_ADDRESS = _timeLockAddress;
         USDTAddress = _USDTAddress;
-        USDPAddress = _USDPAddress;
+        USDFAddress = _USDFAddress;
         _disableInitializers();
-        emit AddToken(USDPAddress, USDTAddress);
+        emit AddToken(USDFAddress, USDTAddress);
     }
 
     modifier onlyTimeLock() {
@@ -103,14 +103,14 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         emit UpdateCommissionRate(oldCommissionRate, commissionRate);
     }
 
-    function updateUSDPMaxSupply(uint256 _USDPMaxSupply) external onlyRole(ADMIN_ROLE) {
-        require(_USDPMaxSupply > 0, "USDPMaxSupply cannot be a zero");
+    function updateUSDFMaxSupply(uint256 _USDFMaxSupply) external onlyRole(ADMIN_ROLE) {
+        require(_USDFMaxSupply > 0, "USDFMaxSupply cannot be a zero");
 
-        uint256 oldUSDPMaxSupply = USDPMaxSupply;
-        require(oldUSDPMaxSupply != _USDPMaxSupply, "newUSDPMaxSupply can not be equal oldUSDPMaxSupply");
+        uint256 oldUSDFMaxSupply = USDFMaxSupply;
+        require(oldUSDFMaxSupply != _USDFMaxSupply, "newUSDFMaxSupply can not be equal oldUSDFMaxSupply");
 
-        USDPMaxSupply = _USDPMaxSupply;
-        emit UpdateUSDPMaxSupply(oldUSDPMaxSupply, USDPMaxSupply);
+        USDFMaxSupply = _USDFMaxSupply;
+        emit UpdateUSDFMaxSupply(oldUSDFMaxSupply, USDFMaxSupply);
     }
 
     function updateCeffuAddress(address _ceffuAddress) external onlyRole(ADMIN_ROLE) {
@@ -133,29 +133,29 @@ contract USDPEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
 
 
     function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
-        _mintUSDP(amountIn);
+        _mintUSDF(amountIn);
     }
 
     /**
-      * @dev mint USDP token
+      * @dev mint USDF token
       */
-    function _mintUSDP(uint256 amountIn) private {
+    function _mintUSDF(uint256 amountIn) private {
         require(USDTAddress != address(0), "USDTAddress cannot be a zero address");
 
         require(amountIn > 0, "invalid amount");
         require(USDTDepositEnabled == true, "Deposit is paused");
-        require(USDPAddress != address(0), "USDPAddress cannot be a zero address");
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
 
         uint256 resultAmountIn = _transferToVault(msg.sender, USDTAddress, amountIn);
         require(resultAmountIn == amountIn, "Amount not matched");
 
-        IERC20 erc20 = IERC20(USDPAddress);
+        IERC20 erc20 = IERC20(USDFAddress);
         uint256 totalSupply = erc20.totalSupply();
-        uint256 USDPAmount =  amountIn * (1e4 - commissionRate) / 1e4;
-        require(totalSupply + USDPAmount <= USDPMaxSupply, "The amount is too large");
+        uint256 USDFAmount =  amountIn * (1e4 - commissionRate) / 1e4;
+        require(totalSupply + USDFAmount <= USDFMaxSupply, "The amount is too large");
 
-        IAs(USDPAddress).mint(msg.sender, USDPAmount);
-        emit MintUSDP(msg.sender, USDTAddress, USDPAddress, amountIn, USDPAmount);
+        IAs(USDFAddress).mint(msg.sender, USDFAmount);
+        emit MintUSDF(msg.sender, USDTAddress, USDFAddress, amountIn, USDFAmount);
     }
 
     /**
