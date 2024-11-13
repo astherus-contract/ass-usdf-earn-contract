@@ -100,8 +100,8 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         require(USDFDepositEnabled == true, "Deposit is paused");
         require(amountIn > 0, "invalid amount");
 
-        amountIn = _transferToVault(msg.sender, USDFAddress, amountIn);
         uint256 exchange_price = exchangePrice();
+        amountIn = _transferToVault(msg.sender, USDFAddress, amountIn);
         uint256 asUSDFAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchange_price;
         require(asUSDFAmount > 0, "invalid amount");
 
