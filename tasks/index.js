@@ -1,4 +1,6 @@
 require('./UpgradeEarn.js');
 require('./UpgradeWithdrawVault.js');
-require('./GrantRoleForUSDP');
-require('./GrantRoleForUSDPEarn');
+require('./GrantRoleForUSDF');
+require('./GrantRoleForasUSDF');
+require('./GrantRoleForUSDFEarn');
+require('./GrantRoleForasUSDFEarn');

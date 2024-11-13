@@ -201,7 +201,10 @@ grantRole: 把 Earn合约地址加到 TRANSFER_ROLE 角色下
 ### 2.1 grantRole: 把 Earn合约地址加到 MINTER_AND_BURN_ROLE 角色下
 更改 const contract='AssUSDT' 变量值
 ```shell
-npx hardhat grantRole:minter_and_burn_role_usdp --network bscTestnet
+npx hardhat grantRole:minter_and_burn_role_usdf --network bscTestnet
+npx hardhat grantRole:minter_and_burn_role_asusdf --network bscTestnet
+npx hardhat grantRole:USDFEarn --network bscTestnet
+npx hardhat grantRole:asUSDFEarn --network bscTestnet
 ```
 ### 2.2 approve: 授权spender(Earn合约地址)使用多少数量的token
 

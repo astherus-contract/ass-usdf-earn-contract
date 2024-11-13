@@ -6,12 +6,12 @@ require("@nomicfoundation/hardhat-toolbox");
 //MINTER_AND_BURN_ROLE
 const role='0x144dc67236c5b8b129f92a31bb5cba2a9c107df2d9bcedef0515ca3f60ecb794'
 
-const contract='USDF'
+const contract='asUSDF'
 
 
-task("grantRole:minter_and_burn_role_usdp", "grantRole:minter_and_burn_role_usdp")
+task("grantRole:minter_and_burn_role_asusdf", "grantRole:minter_and_burn_role_asusdf")
     .setAction(async ({facets}) => {
-        const Earn = await ethers.getContract('USDPEarn')
+        const Earn = await ethers.getContract('asUSDFEarn')
         const Contract = await ethers.getContract(contract);
         const Timelock = await ethers.getContract('Timelock');
         const provider = new ethers.providers.JsonRpcProvider(network.config.url);
