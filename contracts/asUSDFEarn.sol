@@ -48,7 +48,6 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         USDFAddress = _USDFAddress;
         asUSDFAddress = _asUSDFAddress;
         _disableInitializers();
-        emit AddToken(asUSDFAddress, USDFAddress);
     }
 
     modifier onlyTimeLock() {
@@ -65,6 +64,9 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         _grantRole(DEFAULT_ADMIN_ROLE, TIMELOCK_ADDRESS);
         _grantRole(ADMIN_ROLE, defaultAdmin);
         _grantRole(PAUSE_ROLE, defaultAdmin);
+
+        emit AddToken(asUSDFAddress, USDFAddress);
+
     }
 
     function pause() external onlyRole(PAUSE_ROLE) {
