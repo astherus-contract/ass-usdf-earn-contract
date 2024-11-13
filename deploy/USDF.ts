@@ -2,10 +2,10 @@ import assert from 'assert'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 
-const contractName = 'AssXXX'
+const contractName = 'USDF'
 
-const name='Astherus AssUSDF'
-const symbol='AssUSDF'
+const name='Astherus USDF'
+const symbol='USDF'
 
 const deploy: DeployFunction = async (hre) => {
     const {getNamedAccounts, deployments,ethers} = hre

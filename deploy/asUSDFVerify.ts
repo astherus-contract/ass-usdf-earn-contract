@@ -2,17 +2,17 @@ import {run} from "hardhat";
 
 import {type DeployFunction} from 'hardhat-deploy/types'
 
-const tag = 'USDTTestVerify'
+const tag = 'asUSDFVerify'
 
-const name = 'Astherus USDT'
-const symbol = 'USDT'
+const name = 'Astherus asUSDF'
+const symbol = 'asUSDF'
 
 const deploy: DeployFunction = async (hre) => {
     const {getNamedAccounts, deployments, ethers} = hre
 
     const {deployer} = await getNamedAccounts()
 
-    const USDTTest = await ethers.getContract('USDTTest');
+    const asUSDF = await ethers.getContract('asUSDF');
 
     const endpointV2Deployment = await hre.deployments.get('EndpointV2')
     console.log(`EndpointV2: ${endpointV2Deployment.address}`)
@@ -22,8 +22,15 @@ const deploy: DeployFunction = async (hre) => {
     await run(
         "verify:verify",
         {
-            address: USDTTest.address,
+            contract:"contracts/oft/asUSDF.sol:asUSDF",
+            address: asUSDF.address,
             constructorArguments: [
+                name, // name
+                symbol, // symbol
+                [], //_transferLimitConfigs
+                endpointV2Deployment.address, // LayerZero's EndpointV2 address
+                deployer, // _defaultAdmin
+                timelock.address //timelock
             ]
         }
     );

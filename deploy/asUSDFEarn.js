@@ -9,11 +9,12 @@ module.exports = async function ({
     const {deployer, multisig} = await getNamedAccounts();
 
     const Timelock = await ethers.getContract('Timelock');
-    const USDP = await ethers.getContract('USDP');
+    const asUSDF = await ethers.getContract('asUSDF');
+    const USDF = await ethers.getContract('USDF');
 
-    await deploy('USDPEarn', {
+    await deploy('asUSDFEarn', {
             from: deployer,
-        args: [Timelock.address, '0xB9EF9C975EBB606498d14B105a1619E89255c972', USDP.address],
+        args: [Timelock.address, USDF.address, asUSDF.address],
             log: true, 
             skipIfAlreadyDeployed: false,
             proxy: {
@@ -38,5 +39,5 @@ module.exports = async function ({
     );
 };
 
-module.exports.tags = ['USDPEarn'];
+module.exports.tags = ['asUSDFEarn'];
 module.exports.dependencies = [];
