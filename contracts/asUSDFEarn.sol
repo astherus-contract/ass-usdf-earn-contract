@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "./interface/IAs.sol";
 
@@ -100,7 +101,9 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         require(USDFDepositEnabled == true, "Deposit is paused");
         require(amountIn > 0, "invalid amount");
 
+        //getting exchange price must be in front of transferToVault.
         uint256 exchange_price = exchangePrice();
+
         amountIn = _transferToVault(msg.sender, USDFAddress, amountIn);
         uint256 asUSDFAmount = amountIn * EXCHANGE_PRICE_DECIMALS / exchange_price;
         require(asUSDFAmount > 0, "invalid amount");
@@ -132,8 +135,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         if (USDFBalance <= 0){
             return EXCHANGE_PRICE_DECIMALS;
         }
-
-        return (USDFBalance * EXCHANGE_PRICE_DECIMALS) / totalSupply;
+        return Math.mulDiv(USDFBalance,EXCHANGE_PRICE_DECIMALS,totalSupply);
     }
     
 
