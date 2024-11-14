@@ -22,6 +22,7 @@ const deploy: DeployFunction = async (hre) => {
     await run(
         "verify:verify",
         {
+            contract:"contracts/oft/USDF.sol:USDF",
             address: USDF.address,
             constructorArguments: [
                 name, // name

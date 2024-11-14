@@ -32,8 +32,8 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY
 const accounts: HttpNetworkAccountsUserConfig | undefined = MNEMONIC
     ? { mnemonic: MNEMONIC }
     : PRIVATE_KEY
-      ? [PRIVATE_KEY]
-      : undefined
+        ? [PRIVATE_KEY]
+        : undefined
 
 if (accounts == null) {
     console.warn(
@@ -63,8 +63,23 @@ const config: HardhatUserConfig = {
         'bscTestnet': {
             eid: EndpointId.BSC_V2_TESTNET,
             url: process.env.RPC_URL_SEPOLIA || 'https://data-seed-prebsc-1-s1.bnbchain.org:8545/',
+            chainId: 97,
             accounts,
             tags: ['testnet']
+        },
+        'bscMainnetTest': {
+            eid: EndpointId.BSC_V2_MAINNET,
+            url: process.env.RPC_URL_SEPOLIA || 'https://bsc-dataseed.binance.org/',
+            chainId: 56,
+            accounts,
+            tags: ['mainnet']
+        },
+        'bscMainnet': {
+            eid: EndpointId.BSC_V2_MAINNET,
+            url: process.env.RPC_URL_SEPOLIA || 'https://bsc-dataseed.binance.org/',
+            chainId: 56,
+            accounts,
+            tags: ['mainnet']
         },
         'sepoliaTestnet': {
             eid: EndpointId.SEPOLIA_V2_TESTNET,
