@@ -14,7 +14,7 @@ module.exports = async function ({
     const deployment = await deploy('USDFEarn_Implementation', {
         contract: "USDFEarn",
         from: deployer,
-        args: [Timelock.address, '0xB9EF9C975EBB606498d14B105a1619E89255c972', USDF.address],
+        args: [Timelock.address, '0x55d398326f99059fF775485246999027B3197955', USDF.address],
         log: true, 
         skipIfAlreadyDeployed: false,
     });
