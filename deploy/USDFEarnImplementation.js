@@ -8,17 +8,17 @@ module.exports = async function ({
     const {deploy} = deployments;
     const {deployer} = await getNamedAccounts();
     const Timelock = await ethers.getContract('Timelock');
-    const USDP = await ethers.getContract('USDP');
+    const USDF = await ethers.getContract('USDF');
 
 
-    const deployment = await deploy('USDPEarn_Implementation', {
-        contract: "USDPEarn",
+    const deployment = await deploy('USDFEarn_Implementation', {
+        contract: "USDFEarn",
         from: deployer,
-        args: [Timelock.address, '0xB9EF9C975EBB606498d14B105a1619E89255c972', USDP.address],
+        args: [Timelock.address, '0x55d398326f99059fF775485246999027B3197955', USDF.address],
         log: true, 
         skipIfAlreadyDeployed: false,
     });
 };
 
-module.exports.tags = ['USDPEarn_Implementation'];
+module.exports.tags = ['USDFEarn_Implementation'];
 module.exports.dependencies = [];

@@ -2,10 +2,13 @@ import assert from 'assert'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 
-const contractName = 'BTCTest'
+const contractName = 'asUSDF'
+
+const name='Astherus asUSDF'
+const symbol='asUSDF'
 
 const deploy: DeployFunction = async (hre) => {
-    const { getNamedAccounts, deployments } = hre
+    const {getNamedAccounts, deployments,ethers} = hre
 
     const { deploy } = deployments
     const { deployer } = await getNamedAccounts()
@@ -15,16 +18,22 @@ const deploy: DeployFunction = async (hre) => {
     console.log(`Network: ${hre.network.name}`)
     console.log(`Deployer: ${deployer}`)
 
+    const timelock = await ethers.getContract('Timelock');
     const { address } = await deploy(contractName, {
         from: deployer,
-        args: [],
+        args: [
+            name, // name
+            symbol, // symbol
+            deployer, // _defaultAdmin
+            timelock.address //timelock
+        ],
         log: true,
         skipIfAlreadyDeployed: false,
     })
 
-    console.log(`Deployed contract: ${contractName}, network: ${hre.network.name}, address: ${address}`)
+    console.log(`Deployed contract: ${symbol}, network: ${hre.network.name}, address: ${address}`)
 }
 
-deploy.tags = [contractName]
+deploy.tags = [symbol]
 
 export default deploy

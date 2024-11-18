@@ -80,7 +80,9 @@ npx hardhat deploy --network bscTestnet --tags WithdrawVault
 ### 代理合约和逻辑主合约部署[Earn]
 
 ```shell
-npx hardhat deploy --network bscTestnet --tags USDPEarn
+npx hardhat deploy --network bscTestnet --tags USDFEarn
+
+npx hardhat deploy --network bscTestnet --tags asUSDFEarn
 ```
 
 # 验证合约
@@ -94,8 +96,18 @@ npx hardhat deploy --network bscTestnet --tags WithdrawVaultVerify
 ```
 
 ```shell
-npx hardhat deploy --network bscTestnet --tags USDPEarnVerify
+npx hardhat deploy --network bscTestnet --tags USDFEarnVerify
+npx hardhat deploy --network bscTestnet --tags asUSDFEarnVerify
 ```
+
+```shell
+npx hardhat deploy --network bscTestnet --tags USDFVerify
+```
+
+```shell
+npx hardhat deploy --network bscTestnet --tags asUSDFVerify
+```
+
 
 # 合约升级
 
@@ -110,11 +122,14 @@ hardhat deploy --network bscTestnet --tags EarnImplementation
 # AssXXX 部署
 ## 【注意】每次部署成功之后,生成的AssXXX.json要改成正确的代币名称 比如 AssBTC AssBNB ...
 ```shell
-npx hardhat deploy --network bscTestnet --tags AssBTC
+npx hardhat deploy --network bscTestnet --tags USDF
+```
+```shell
+npx hardhat deploy --network bscTestnet --tags asUSDF
 ```
 
 ```shell
-npx hardhat deploy --network bscTestnet --tags AssBNB
+npx hardhat deploy --network bscTestnet --tags asUSDF
 ```
 
 ```shell
@@ -186,7 +201,10 @@ grantRole: 把 Earn合约地址加到 TRANSFER_ROLE 角色下
 ### 2.1 grantRole: 把 Earn合约地址加到 MINTER_AND_BURN_ROLE 角色下
 更改 const contract='AssUSDT' 变量值
 ```shell
-npx hardhat grantRole:minter_and_burn_role_usdp --network bscTestnet
+npx hardhat grantRole:minter_and_burn_role_usdf --network bscTestnet
+npx hardhat grantRole:minter_and_burn_role_asusdf --network bscTestnet
+npx hardhat grantRole:USDFEarn --network bscTestnet
+npx hardhat grantRole:asUSDFEarn --network bscTestnet
 ```
 ### 2.2 approve: 授权spender(Earn合约地址)使用多少数量的token
 

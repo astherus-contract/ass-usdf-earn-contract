@@ -8,18 +8,19 @@ module.exports = async function ({
     getUnnamedAccounts
 }) {
     const {deploy} = deployments;
-    const EarnImplementation = await ethers.getContract('USDPEarn_Implementation');
+    const EarnImplementation = await ethers.getContract('asUSDFEarn_Implementation');
     const Timelock = await ethers.getContract('Timelock');
-    const USDP = await ethers.getContract('USDP');
+    const USDF = await ethers.getContract('USDF');
+    const asUSDF = await ethers.getContract('asUSDF');
 
     await run(
         "verify:verify", 
         {
             address: EarnImplementation.address,
-            constructorArguments: [Timelock.address, '0xB9EF9C975EBB606498d14B105a1619E89255c972', USDP.address]
+            constructorArguments: [Timelock.address, USDF.address, asUSDF.address]
         }
     );
 };
 
-module.exports.tags = ['USDPEarnVerify'];
-module.exports.dependencies = ['EarnImplementation'];
+module.exports.tags = ['asUSDFEarnVerify'];
+module.exports.dependencies = ['asUSDFEarn_Implementation'];
