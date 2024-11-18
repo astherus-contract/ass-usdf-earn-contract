@@ -14,8 +14,6 @@ const deploy: DeployFunction = async (hre) => {
 
     const asUSDF = await ethers.getContract('asUSDF');
 
-    const endpointV2Deployment = await hre.deployments.get('EndpointV2')
-    console.log(`EndpointV2: ${endpointV2Deployment.address}`)
 
     const timelock = await ethers.getContract('Timelock');
 
@@ -27,8 +25,6 @@ const deploy: DeployFunction = async (hre) => {
             constructorArguments: [
                 name, // name
                 symbol, // symbol
-                [], //_transferLimitConfigs
-                endpointV2Deployment.address, // LayerZero's EndpointV2 address
                 deployer, // _defaultAdmin
                 timelock.address //timelock
             ]
