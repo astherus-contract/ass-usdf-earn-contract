@@ -3,22 +3,19 @@ const fs = require('fs');
 const prompt = require('prompt-sync')();
 require("@nomicfoundation/hardhat-toolbox");
 
-//MINTER_AND_BURN_ROLE
-const role='0x0000000000000000000000000000000000000000000000000000000000000000'
-
 const contract='USDF'
 
+const address='0xa8c0C6Ee62F5AD95730fe23cCF37d1c1FFAA1c3f'
 
-task("grantRole:minter_and_burn_role_usdf", "grantRole:minter_and_burn_role_usdf")
+task("setDelegateForUSDF", "setDelegateForUSDF")
     .setAction(async ({facets}) => {
-        const Earn = await ethers.getContract('USDFEarn')
         const Contract = await ethers.getContract(contract);
         const Timelock = await ethers.getContract('Timelock');
         const provider = new ethers.providers.JsonRpcProvider(network.config.url);
 
         const target = Contract.address;
-        const functionSignature = 'grantRole(bytes32,address)';
-        const data = '0x' + Contract.interface.encodeFunctionData('grantRole', [role, '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe']).substring(10);
+        const functionSignature = 'setDelegate(address)';
+        const data = '0x' + Contract.interface.encodeFunctionData('setDelegate', [address]).substring(10);
 
         console.log(`target: ${target}`);
         console.log(`functionSignature: ${functionSignature}`);

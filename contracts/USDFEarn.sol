@@ -31,8 +31,13 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     event UpdateCeffuAddress(address oldCeffuAddress, address newCeffuAddress);
     event UpdateTransferToCeffuEnabled(bool oldTransferToCeffuEnabled, bool newTransferToCeffuEnabled);
     event TransferToCeffu(address indexed USDTAddress, uint256 USDTAmount, address ceffuAddress);
-
     event MintUSDF(address indexed sender, address indexed USDTAddress, address indexed USDFAddress, uint256 amountIn, uint256 USDFAmount);
+    event UpdateWithdrawEnabled(bool oldWithdrawEnabled, bool newWithdrawEnabled);
+    event UpdateEmergencyWithdrawEnabled(bool oldEmergencyWithdrawEnabled, bool newEmergencyWithdrawEnabled);
+    event AddEmergencyWithdrawWhitelist(address indexed sender, address indexed user);
+    event RemoveEmergencyWithdrawWhitelist(address indexed sender, address indexed user);
+
+
 
     address public immutable TIMELOCK_ADDRESS;
 
@@ -43,6 +48,10 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     bool public USDTDepositEnabled;
     address public ceffuAddress;
     bool public transferToCeffuEnabled;
+
+    bool public withdrawEnabled;
+    bool public emergencyWithdrawEnabled;
+    mapping(address => uint) public emergencyWithdrawWhitelist;
 
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -131,6 +140,46 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         emit UpdateTransferToCeffuEnabled(oldTransferToCeffuEnabled, transferToCeffuEnabled);
     }
 
+    function updateWithdrawEnabled(bool enabled) external onlyRole(ADMIN_ROLE) {
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+
+        bool oldWithdrawEnabled = withdrawEnabled;
+        require(oldWithdrawEnabled != enabled, "newWithdrawEnabled can not be equal oldWithdrawEnabled");
+
+        withdrawEnabled = enabled;
+
+        emit UpdateWithdrawEnabled(oldWithdrawEnabled, withdrawEnabled);
+    }
+
+    function updateEmergencyWithdrawEnabled(bool enabled) external onlyRole(ADMIN_ROLE) {
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+
+        bool oldEmergencyWithdrawEnabled = emergencyWithdrawEnabled;
+        require(oldEmergencyWithdrawEnabled != enabled, "newEmergencyWithdrawEnabled can not be equal oldEmergencyWithdrawEnabled");
+
+        emergencyWithdrawEnabled = enabled;
+
+        emit UpdateEmergencyWithdrawEnabled(oldEmergencyWithdrawEnabled, emergencyWithdrawEnabled);
+    }
+
+    function addEmergencyWithdrawWhitelist(address[] memory users) external onlyRole(ADMIN_ROLE) {
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+
+        for (uint256 i = 0; i < users.length; i++) {
+            emergencyWithdrawWhitelist[users[i]] = 1;
+            emit AddEmergencyWithdrawWhitelist(msg.sender, users[i]);
+        }
+    }
+
+    function removeEmergencyWithdrawWhitelist(address[] memory users) external onlyRole(ADMIN_ROLE) {
+        require(USDFAddress != address(0), "USDFAddress cannot be a zero address");
+
+        for (uint256 i = 0; i < users.length; i++) {
+            emergencyWithdrawWhitelist[users[i]] = 0;
+            emit RemoveEmergencyWithdrawWhitelist(msg.sender, users[i]);
+        }
+    }
+
 
     function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
         _mintUSDF(amountIn);
@@ -178,6 +227,45 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
             erc20.safeTransferFrom(from, address(this), amount);
             return erc20.balanceOf(address(this)) - before;
     }
-    
+
+    function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        _doRequestWithdraw(amount, false);
+    }
+
+    function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        _doRequestWithdraw(amount, true);
+    }
+
+    function _doRequestWithdraw(address amount, bool emergency) private {
+        require(USDFAddress != address(0), "sourceTokenAddress cannot be a zero address");
+        require(amount > 0, "invalid amount");
+
+        Token storage token = supportAssToken[assTokenAddress];
+        require(token.assTokenAddress != address(0), "currency not support");
+        require(token.withdrawEnabled == true, "pause withdraw");
+
+        if (emergency) {
+            require(token.emergencyWithdrawEnabled || emergencyWithdrawWhitelist[assTokenAddress][msg.sender] == 1, "not support emergency withdraw");
+        }
+
+        uint256 assTokenBalance = IERC20(assTokenAddress).balanceOf(msg.sender);
+        require(assTokenAmount <= assTokenBalance, "insufficient balance");
+
+        assTokenAmount = _lock(msg.sender, assTokenAddress, assTokenAmount);
+
+        requestWithdrawMaxNo += 1;
+        RequestWithdrawInfo memory requestWithdrawInfo = RequestWithdrawInfo({
+            assTokenAddress: assTokenAddress,
+            assTokenAmount: assTokenAmount,
+            applyTimestamp: block.timestamp,
+            sourceTokenAmount: 0,
+            canClaimWithdraw: false,
+            receipt: msg.sender,
+            emergency: emergency
+        });
+        requestWithdraws[requestWithdrawMaxNo] = requestWithdrawInfo;
+
+        emit RequestWithdraw(msg.sender, assTokenAddress, assTokenAmount, requestWithdrawMaxNo, emergency);
+    }
 
 }

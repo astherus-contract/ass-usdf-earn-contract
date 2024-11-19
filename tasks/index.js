@@ -4,3 +4,7 @@ require('./GrantRoleForUSDF');
 require('./GrantRoleForasUSDF');
 require('./GrantRoleForUSDFEarn');
 require('./GrantRoleForasUSDFEarn');
+require('./SetDelegateForUSDF');
+require('./GrantRoleForTimeLock');
+require('./ChangeTimelockMinDelay');
+require('./ChangeTimelockMaxDelay');
