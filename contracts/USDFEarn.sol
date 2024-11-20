@@ -14,8 +14,9 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "./interface/IAsERC20.sol";
 import "./libraries/Withdrawable.sol";
 import "./interface/IWithdrawVault.sol";
+import "./interface/IUSDFEarn.sol";
 
-contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, Withdrawable {
+contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, Withdrawable, IUSDFEarn {
 
     using Address for address payable;
     using SafeERC20 for IERC20;
