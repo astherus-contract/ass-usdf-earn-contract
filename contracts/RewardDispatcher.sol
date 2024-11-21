@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.25;
 
+import "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interface/IWithdrawVault.sol";
 import "./interface/IWithdrawable.sol";
@@ -8,17 +12,23 @@ import "./interface/IAsERC20.sol";
 import "./interface/IUSDFEarn.sol";
 import "./interface/IAsUSDFEarn.sol";
 
-contract RewardDispatcher {
+contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, PausableUpgradeable, UUPSUpgradeable {
     using SafeERC20 for IERC20;
     using SafeERC20 for IAsERC20;
 
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
+    bytes32 public constant BOT_ROLE = keccak256("BOT_ROLE");
+
+    address public immutable TIMELOCK_ADDRESS;
     IUSDFEarn public immutable USDFEarn;
     IAsUSDFEarn public immutable AsUSDFEarn;
     IERC20 immutable USDT;
     IAsERC20 immutable USDF;
     IAsERC20 immutable asUSDF;
 
-    constructor(IUSDFEarn _USDFEarn, IAsUSDFEarn _AsUSDFEarn) {
+    constructor(address _timeLock, IUSDFEarn _USDFEarn, IAsUSDFEarn _AsUSDFEarn) {
+        TIMELOCK_ADDRESS = _timeLock;
         USDFEarn = _USDFEarn;
         AsUSDFEarn = _AsUSDFEarn;
         USDT = _USDFEarn.USDT();
@@ -27,167 +37,41 @@ contract RewardDispatcher {
         asUSDF = _AsUSDFEarn.asUSDF();
     }
 
-    /*
-    bytes32 constant STORAGE_POSITION = keccak256("as.usdt.storage");
+    function initialize(address _admin) initializer public {
+        __Pausable_init();
+        __AccessControlEnumerable_init();
+        __UUPSUpgradeable_init();
 
-    struct Storage {
-        bool withdrawEnabled;
-        bool emergencyWithdrawEnabled;
-        uint256 requestWithdrawMaxNo;
-        mapping(address => bool) emergencyWithdrawWhitelist;
-        mapping(uint256 => RequestWithdrawInfo) requestWithdraws;
+        _grantRole(DEFAULT_ADMIN_ROLE, TIMELOCK_ADDRESS);
+        _grantRole(ADMIN_ROLE, _admin);
+        _grantRole(PAUSE_ROLE, _admin);
     }
 
-    function getStorage() internal pure returns (Storage storage st) {
-        bytes32 position = STORAGE_POSITION;
-        assembly {
-            st.slot := position
-        }
+    modifier onlyTimeLock() {
+        require(msg.sender == TIMELOCK_ADDRESS, "only time lock");
+        _;
     }
 
-    constructor(IERC20 _sourceToken, IAsERC20 _asToken, IWithdrawVault _withdrawVault) {
-        sourceToken = _sourceToken;
-        asToken = _asToken;
-        WITHDRAW_VAULT = _withdrawVault;
+    function _authorizeUpgrade(address newImplementation) internal onlyTimeLock override {}
+
+    function pause() external onlyRole(PAUSE_ROLE) {
+        _pause();
     }
 
-    function _doRequestWithdraw(uint amount, uint receiveAmount,  bool emergency) internal {
-        Storage storage st = getStorage();
-        require(st.withdrawEnabled == true, "withdraw paused");
-        require(amount > 0, "invalid amount");
-        if (emergency) {
-            require(
-                st.emergencyWithdrawEnabled || !st.emergencyWithdrawWhitelist[msg.sender], 
-                "not support emergency withdraw"
-            );
-        }
-
-        asToken.safeTransferFrom(msg.sender, address(this), amount);
-
-        RequestWithdrawInfo memory requestWithdrawInfo = RequestWithdrawInfo({
-            withdrawToken: asToken,
-            withdrawAmount: amount,
-            receiveAmount: receiveAmount,
-            withdrawTime: block.timestamp,
-            claimable: false,
-            receipt: msg.sender,
-            emergency: emergency
-        });
-        st.requestWithdrawMaxNo += 1;
-        st.requestWithdraws[st.requestWithdrawMaxNo] = requestWithdrawInfo;
-
-        emit RequestWithdraw(msg.sender, asToken, amount, st.requestWithdrawMaxNo, emergency);
+    function unpause() external onlyRole(ADMIN_ROLE) {
+        _unpause();
     }
 
-    function _distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList) internal {
-        Storage storage st = getStorage();
-        require(st.withdrawEnabled == true, "withdraw paused");
-        for (uint i = 0; i < distributeWithdrawInfoList.length; i ++) {
-            DistributeWithdrawInfo calldata distributeWithdrawInfo = distributeWithdrawInfoList[i];
-
-            RequestWithdrawInfo memory requestWithdrawInfo = st.requestWithdraws[distributeWithdrawInfo.requestWithdrawNo];
-
-            require(
-                requestWithdrawInfo.withdrawToken == distributeWithdrawInfo.withdrawToken && 
-                requestWithdrawInfo.receipt == distributeWithdrawInfo.receipt, 
-                "unmatched request"
-            );
-            require(!requestWithdrawInfo.claimable, "already distribute");
-            if (requestWithdrawInfo.receiveAmount == 0) {
-                requestWithdrawInfo.receiveAmount = distributeWithdrawInfo.receiveAmount;
-            }
-            requestWithdrawInfo.claimable = true;
-
-            st.requestWithdraws[distributeWithdrawInfo.requestWithdrawNo] = requestWithdrawInfo;
-
-            asToken.burn(address(this), requestWithdrawInfo.withdrawAmount);
-
-            emit DistributeWithdraw(
-                asToken, 
-                sourceToken, 
-                requestWithdrawInfo.withdrawAmount, 
-                requestWithdrawInfo.receiveAmount, 
-                distributeWithdrawInfo.requestWithdrawNo
-            );
-        }
+    function mintReward(uint amount) external {
+        USDT.safeTransferFrom(msg.sender, address(this), amount);
+        USDT.approve(address(USDFEarn), amount);
+        USDFEarn.deposit(amount);
+        USDT.approve(address(USDFEarn), 0);
     }
 
-    function _claimWithdraw(uint256[] calldata requestWithdrawNos) internal {
-        Storage storage st = getStorage();
-        require(st.withdrawEnabled == true, "withdraw paused");
-        for (uint i = 0; i < requestWithdrawNos.length; i = i ++) {
-            uint256 requestWithdrawNo = requestWithdrawNos[i];
-            RequestWithdrawInfo memory requestWithdrawInfo = st.requestWithdraws[requestWithdrawNo];
-            require(requestWithdrawInfo.receiveAmount > 0 && requestWithdrawInfo.claimable == true, "not available");
-            require(requestWithdrawInfo.receipt == msg.sender, "illegal sender");
-
-            delete st.requestWithdraws[requestWithdrawNo];
-
-            WITHDRAW_VAULT.transfer(msg.sender, sourceToken, requestWithdrawInfo.receiveAmount);
-
-            emit ClaimWithdraw(
-                msg.sender, 
-                asToken, 
-                sourceToken, 
-                requestWithdrawInfo.withdrawAmount, 
-                requestWithdrawInfo.receiveAmount, 
-                requestWithdrawNo
-            );
-        }
+    function dispatchReward(uint amount) external onlyRole(BOT_ROLE) {
+        USDF.approve(address(AsUSDFEarn), amount);
+        AsUSDFEarn.dispatchReward(amount);
+        USDF.approve(address(AsUSDFEarn), 0);
     }
-
-    function withdrawEnabled() external view returns (bool) {
-        return getStorage().withdrawEnabled;
-    }
-
-    function emergencyWithdrawEnabled() external view returns (bool) {
-        return getStorage().emergencyWithdrawEnabled;
-    }
-
-    function requestWithdrawMaxNo() external view returns (uint) {
-        return getStorage().requestWithdrawMaxNo;
-    }
-
-    function emergencyWithdrawWhitelist(address user) external view returns (bool) {
-        return getStorage().emergencyWithdrawWhitelist[user];
-    }
-
-    function requestWithdraws(uint requestWithdrawNo) external view returns (RequestWithdrawInfo memory) {
-        return getStorage().requestWithdraws[requestWithdrawNo];
-    }
-
-    modifier onlyAdmin() virtual;
-
-    function updateWithdrawEnabled(bool enabled) external onlyAdmin {
-        Storage storage st = getStorage();        
-        bool oldWithdrawEnabled = st.withdrawEnabled;
-        require(oldWithdrawEnabled != enabled, "already set");
-        st.withdrawEnabled = enabled;
-        emit UpdateWithdrawEnabled(oldWithdrawEnabled, enabled);
-    }
-
-    function updateEmergencyWithdrawEnabled(bool enabled) external onlyAdmin {
-        Storage storage st = getStorage();        
-        bool oldEmergencyWithdrawEnabled = st.emergencyWithdrawEnabled;
-        require(oldEmergencyWithdrawEnabled != enabled, "already set");
-        st.emergencyWithdrawEnabled = enabled;
-        emit UpdateEmergencyWithdrawEnabled(oldEmergencyWithdrawEnabled, enabled);
-    }
-
-    function addEmergencyWithdrawWhitelist(address[] calldata users) external onlyAdmin {
-        Storage storage st = getStorage();        
-        for (uint256 i = 0; i < users.length; i++) {
-            st.emergencyWithdrawWhitelist[users[i]] = true;
-            emit AddEmergencyWithdrawWhitelist(msg.sender, users[i]);
-        }
-    }
-
-    function removeEmergencyWithdrawWhitelist(address[] memory users) external onlyAdmin {
-        Storage storage st = getStorage();        
-        for (uint256 i = 0; i < users.length; i++) {
-            delete st.emergencyWithdrawWhitelist[users[i]];
-            emit RemoveEmergencyWithdrawWhitelist(msg.sender, users[i]);
-        }
-    }
-    */
 }

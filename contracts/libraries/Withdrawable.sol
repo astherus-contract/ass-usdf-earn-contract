@@ -66,7 +66,7 @@ abstract contract Withdrawable is IWithdrawable {
         emit RequestWithdraw(msg.sender, asToken, amount, st.requestWithdrawMaxNo, emergency);
     }
 
-    function _distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList) internal {
+    function _distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList, bool doBurn) internal {
         Storage storage st = getStorage();
         require(st.withdrawEnabled == true, "withdraw paused");
         for (uint i = 0; i < distributeWithdrawInfoList.length; i ++) {
@@ -86,8 +86,9 @@ abstract contract Withdrawable is IWithdrawable {
             requestWithdrawInfo.claimable = true;
 
             st.requestWithdraws[distributeWithdrawInfo.requestWithdrawNo] = requestWithdrawInfo;
-
-            asToken.burn(address(this), requestWithdrawInfo.withdrawAmount);
+            if (doBurn) {
+                asToken.burn(address(this), requestWithdrawInfo.withdrawAmount);
+            }
 
             emit DistributeWithdraw(
                 asToken, 

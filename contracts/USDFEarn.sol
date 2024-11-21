@@ -190,7 +190,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
     function distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList)  external nonReentrant whenNotPaused onlyRole(BOT_ROLE) {
-        Withdrawable._distributeWithdraw(distributeWithdrawInfoList);
+        Withdrawable._distributeWithdraw(distributeWithdrawInfoList, true);
     }
 
     function claimWithdraw(uint256[] calldata requestWithdrawNos) external nonReentrant whenNotPaused {

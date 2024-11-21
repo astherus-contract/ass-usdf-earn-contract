@@ -7,4 +7,5 @@ import './IAsERC20.sol';
 interface IUSDFEarn {
     function USDT() external view returns (IERC20);
     function USDF() external view returns (IAsERC20);
+    function deposit(uint256 amountIn) external;
 }

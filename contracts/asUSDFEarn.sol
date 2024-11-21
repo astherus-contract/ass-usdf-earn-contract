@@ -25,6 +25,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
     bytes32 public constant BOT_ROLE = keccak256("BOT_ROLE");
+    uint256 public VESTING_PERIOD = 8 hours;
 
     uint256 public constant EXCHANGE_PRICE_DECIMALS = 1e18;
 
@@ -37,6 +38,8 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     IAsERC20 public immutable asUSDF;
 
     bool public USDFDepositEnabled;
+    uint public lastDispatchTime;
+    uint public lastReward;
 
     constructor(address _timeLockAddress, IAsERC20 _USDF, IAsERC20 _asUSDF, IWithdrawVault _withdrawVault) 
         Withdrawable(_USDF, _asUSDF, _withdrawVault)
@@ -119,8 +122,20 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         return token.balanceOf(address(this)) - before;
     }
 
+    function getUnvestedAmount() public view returns (uint) {
+        uint256 timeSinceLastDistribution = block.timestamp - lastDispatchTime;
+        if (timeSinceLastDistribution >= VESTING_PERIOD) {
+            return 0;
+        }
+        uint256 deltaT;
+        unchecked {
+            deltaT = (VESTING_PERIOD - timeSinceLastDistribution);
+        }
+        return (deltaT * lastReward) / VESTING_PERIOD;
+    }
+
     function exchangePrice() public view returns (uint256) {
-        uint256 USDFBalance = USDF.balanceOf(address(this));
+        uint256 USDFBalance = USDF.balanceOf(address(this)) - getUnvestedAmount();
         uint256 totalSupply = asUSDF.totalSupply();
         if (totalSupply <= 0 || USDFBalance <= 0){
             return EXCHANGE_PRICE_DECIMALS;
@@ -129,22 +144,33 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        asUSDF.burn(msg.sender, amount);
         uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
         Withdrawable._doRequestWithdraw(amount, USDFAmount, false);
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        asUSDF.burn(msg.sender, amount);
         uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
         Withdrawable._doRequestWithdraw(amount, USDFAmount, true);
     }
 
     function distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList)  external nonReentrant whenNotPaused onlyRole(BOT_ROLE) {
-        Withdrawable._distributeWithdraw(distributeWithdrawInfoList);
+        Withdrawable._distributeWithdraw(distributeWithdrawInfoList, false);
     }
 
     function claimWithdraw(uint256[] calldata requestWithdrawNos) external nonReentrant whenNotPaused {
         Withdrawable._claimWithdraw(requestWithdrawNos);
+    }
+
+    function dispatchReward(uint amount) external nonReentrant {
+        if (getUnvestedAmount() > 0) {
+            return;
+        }
+        lastDispatchTime = block.timestamp;
+        USDF.safeTransferFrom(msg.sender, address(this), amount);
+        lastReward = amount;
     }
 }
