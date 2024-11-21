@@ -145,10 +145,10 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        asUSDF.burn(msg.sender, amount);
         uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
         Withdrawable._doRequestWithdraw(amount, USDFAmount, false);
+        asUSDF.burn(address(this), amount);
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {

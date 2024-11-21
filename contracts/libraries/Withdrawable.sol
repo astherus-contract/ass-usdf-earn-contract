@@ -80,6 +80,7 @@ abstract contract Withdrawable is IWithdrawable {
                 "unmatched request"
             );
             require(!requestWithdrawInfo.claimable, "already distribute");
+            //TODO: delete
             if (requestWithdrawInfo.receiveAmount == 0) {
                 requestWithdrawInfo.receiveAmount = distributeWithdrawInfo.receiveAmount;
             }

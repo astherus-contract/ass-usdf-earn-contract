@@ -35,6 +35,7 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         require(_AsUSDFEarn.USDF() == _USDFEarn.USDF(), "earn not match");
         USDF = _USDFEarn.USDF();
         asUSDF = _AsUSDFEarn.asUSDF();
+        _disableInitializers();
     }
 
     function initialize(address _admin) initializer public {
@@ -62,8 +63,7 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         _unpause();
     }
 
-    function mintReward(uint amount) external {
-        USDT.safeTransferFrom(msg.sender, address(this), amount);
+    function mintReward(uint amount) external onlyRole(BOT_ROLE) {
         USDT.approve(address(USDFEarn), amount);
         USDFEarn.deposit(amount);
         USDT.approve(address(USDFEarn), 0);
