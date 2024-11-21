@@ -66,6 +66,8 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         _grantRole(ADMIN_ROLE, defaultAdmin);
         _grantRole(PAUSE_ROLE, defaultAdmin);
 
+        USDFDepositEnabled = true;
+
         emit AddToken(asUSDFAddress, USDFAddress);
 
     }
