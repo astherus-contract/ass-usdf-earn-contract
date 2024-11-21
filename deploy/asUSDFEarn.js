@@ -23,7 +23,7 @@ module.exports = async function ({
                     init: {
                         methodName: 'initialize', 
                         args: [
-                            multisig
+                            deployer
                         ],
                     },
                 },
