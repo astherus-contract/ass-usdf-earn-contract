@@ -43,6 +43,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     bool public USDTDepositEnabled;
     address public ceffuAddress;
     bool public transferToCeffuEnabled;
+    uint256 public burnCommissionRate;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _timeLockAddress, IERC20 _USDT, IAsERC20 _USDF, IWithdrawVault _withdrawVault) 
@@ -106,6 +107,17 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
 
         commissionRate = _commissionRate;
         emit UpdateCommissionRate(oldCommissionRate, commissionRate);
+    }
+
+    function updateBurnCommissionRate(uint256 _commissionRate) external onlyRole(ADMIN_ROLE) {
+        require(_commissionRate >= 0, "commissionRate cannot less than zero");
+        require(_commissionRate <= 1e4, "commissionRate cannot greater than 10000");
+
+        uint256 oldCommissionRate = burnCommissionRate;
+        require(oldCommissionRate != _commissionRate, "newCommissionRate can not be equal oldCommissionRate");
+
+        burnCommissionRate = _commissionRate;
+        emit UpdateCommissionRate(oldCommissionRate, burnCommissionRate);
     }
 
     function updateUSDFMaxSupply(uint256 _USDFMaxSupply) external onlyRole(ADMIN_ROLE) {
@@ -180,12 +192,12 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
     function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        uint256 USDTAmount =  amount * (1e4 - commissionRate) / 1e4;
+        uint256 USDTAmount =  amount * (1e4 - burnCommissionRate) / 1e4;
         Withdrawable._doRequestWithdraw(amount, USDTAmount, false);
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        uint256 USDTAmount =  amount * (1e4 - commissionRate) / 1e4;
+        uint256 USDTAmount =  amount * (1e4 - burnCommissionRate) / 1e4;
         Withdrawable._doRequestWithdraw(amount, USDTAmount, true);
     }
 

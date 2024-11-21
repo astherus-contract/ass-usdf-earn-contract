@@ -25,7 +25,6 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
     bytes32 public constant BOT_ROLE = keccak256("BOT_ROLE");
-    uint256 public VESTING_PERIOD = 8 hours;
 
     uint256 public constant EXCHANGE_PRICE_DECIMALS = 1e18;
 
@@ -36,12 +35,13 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     address public immutable TIMELOCK_ADDRESS;
     IAsERC20 public immutable USDF;
     IAsERC20 public immutable asUSDF;
+    uint256 public immutable VESTING_PERIOD;
 
     bool public USDFDepositEnabled;
     uint public lastDispatchTime;
     uint public lastReward;
 
-    constructor(address _timeLockAddress, IAsERC20 _USDF, IAsERC20 _asUSDF, IWithdrawVault _withdrawVault) 
+    constructor(address _timeLockAddress, IAsERC20 _USDF, IAsERC20 _asUSDF, IWithdrawVault _withdrawVault, uint _vestingPeriod) 
         Withdrawable(_USDF, _asUSDF, _withdrawVault)
     {
         require(_timeLockAddress != address(0), "timeLockAddress cannot be a zero address");
@@ -51,6 +51,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         TIMELOCK_ADDRESS = _timeLockAddress;
         USDF = _USDF;
         asUSDF = _asUSDF;
+        VESTING_PERIOD = _vestingPeriod;
         _disableInitializers();
     }
 
