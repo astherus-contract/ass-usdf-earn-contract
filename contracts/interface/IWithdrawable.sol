@@ -17,7 +17,6 @@ interface IWithdrawable {
 
     struct DistributeWithdrawInfo {
         IERC20 withdrawToken;
-        uint256 receiveAmount;
         uint256 requestWithdrawNo;
         address receipt;
     }

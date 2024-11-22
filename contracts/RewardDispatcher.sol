@@ -38,12 +38,15 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         _disableInitializers();
     }
 
-    function initialize(address _admin) initializer public {
+    function initialize(address _admin, address _deployer) initializer public {
         __Pausable_init();
         __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, TIMELOCK_ADDRESS);
+        // the deployer do some init afther deploy contract
+        // and then renounce the permission
+        _grantRole(DEFAULT_ADMIN_ROLE, _deployer);
         _grantRole(ADMIN_ROLE, _admin);
         _grantRole(PAUSE_ROLE, _admin);
     }
