@@ -9,7 +9,7 @@ import 'hardhat-deploy';
 import "hardhat-deploy-ethers";
 import 'hardhat-abi-exporter';
 import 'hardhat-abi-exporter';
-import './tasks/';
+import './tasks';
 
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 import { EndpointId } from '@layerzerolabs/lz-definitions'

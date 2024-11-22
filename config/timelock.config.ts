@@ -1,4 +1,4 @@
-import * as hre from 'hardhat';
+import { Network } from 'hardhat/types';
 
 interface TimeLockConfig {
     minDelay: number,
@@ -16,4 +16,9 @@ const TimeLockConfig: {[key:string]:TimeLockConfig} = {
     },
 }
 
-export default TimeLockConfig[hre.network.name] ?? TimeLockConfig['default']
+export default function config(network: Network): TimeLockConfig {
+    return TimeLockConfig[network.name] ?? TimeLockConfig['default']
+}
+
+// export default TimeLockConfig[hre.network.name] ?? TimeLockConfig['default']
+// export default TimeLockConfig

@@ -25,8 +25,8 @@ const deploy: DeployFunction = async ({
     await deploy('USDF', {
         from: deployer,
         args: [
-            TokenConfig.USDF.name,
-            TokenConfig.USDF.symbol, 
+            TokenConfig(network).USDF.name,
+            TokenConfig(network).USDF.symbol, 
             [], 
             endpointV2Deployment.address, // LayerZero's EndpointV2 address
             deployer, // _defaultAdmin

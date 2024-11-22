@@ -3,7 +3,8 @@ import {type DeployFunction} from 'hardhat-deploy/types'
 
 export const deploy: DeployFunction = async({
     getNamedAccounts, 
-    deployments, 
+    deployments,
+    network
 }) => {
     const { deploy } = deployments;
     const { deployer, multisig} = await getNamedAccounts();
@@ -11,8 +12,8 @@ export const deploy: DeployFunction = async({
         contract: "Timelock",
         from: deployer, 
         args: [
-            TimeLockConfig.minDelay,
-            TimeLockConfig.maxDelay,
+            TimeLockConfig(network).minDelay,
+            TimeLockConfig(network).maxDelay,
             [multisig],
             [multisig],
         ], 

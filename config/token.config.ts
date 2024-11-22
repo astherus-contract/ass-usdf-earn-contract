@@ -1,4 +1,4 @@
-import * as hre from 'hardhat';
+import { Network } from 'hardhat/types';
 
 interface TokenConfig {
     name: string,
@@ -29,4 +29,8 @@ const TokenConfig: {[key:string]:{[key in Tokens]:TokenConfig}} = {
     },
 }
 
-export default TokenConfig[hre.network.name] ?? TokenConfig['default']
+export default function config(network: Network): {[key in Tokens]:TokenConfig} {
+    return TokenConfig[network.name] ?? TokenConfig['default']
+}
+
+// export default TokenConfig[hre.network.name] ?? TokenConfig['default']

@@ -5,6 +5,7 @@ const deploy: DeployFunction = async ({
     getNamedAccounts, 
     deployments,
     ethers,
+    network,
 }) => {
     const { deploy } = deployments
     const { deployer } = await getNamedAccounts()
@@ -13,8 +14,8 @@ const deploy: DeployFunction = async ({
     await deploy('asUSDF', {
         from: deployer,
         args: [
-            TokenConfig.asUSDF.name, // name
-            TokenConfig.asUSDF.symbol, // symbol
+            TokenConfig(network).asUSDF.name, // name
+            TokenConfig(network).asUSDF.symbol, // symbol
             deployer, // _defaultAdmin
             Timelock.address //timelock
         ],

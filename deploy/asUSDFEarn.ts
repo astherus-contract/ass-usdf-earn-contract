@@ -5,6 +5,7 @@ const deploy: DeployFunction = async ({
     getNamedAccounts, 
     deployments,
     ethers,
+    network,
 }) => {
     const { deploy } = deployments
     const { deployer, multisig } = await getNamedAccounts()
@@ -19,7 +20,7 @@ const deploy: DeployFunction = async ({
             USDF.address, 
             asUSDF.address,
             WithdrawVault.address,
-            EarnConfig.VESTING_PERIOD,
+            EarnConfig(network).VESTING_PERIOD,
         ],
         log: true, 
         skipIfAlreadyDeployed: false,
