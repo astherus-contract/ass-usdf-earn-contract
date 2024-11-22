@@ -8,7 +8,7 @@ const deploy: DeployFunction = async ({
     network,
 }) => {
     const { deploy } = deployments
-    const { deployer } = await getNamedAccounts()
+    const { deployer, multisig } = await getNamedAccounts()
     let endpointV2Deployment = null;
     if (network.name == 'hardhat') {
         // for localhost test, deploy new one
@@ -29,7 +29,7 @@ const deploy: DeployFunction = async ({
             TokenConfig(network).USDF.symbol, 
             [], 
             endpointV2Deployment.address, // LayerZero's EndpointV2 address
-            deployer, // _defaultAdmin
+            multisig, // _defaultAdmin
             Timelock.address //timelock
         ],
         log: true,

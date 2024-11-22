@@ -6,7 +6,7 @@ const deploy: DeployFunction = async ({
     ethers,
 }) => {
     const { deploy } = deployments
-    const { deployer, multisig } = await getNamedAccounts()
+    const { deployer, multisig, bot } = await getNamedAccounts()
     const Timelock = await ethers.getContract('Timelock');
     const USDFEarn = await ethers.getContract('USDFEarn');
     const asUSDFEarn = await ethers.getContract('asUSDFEarn');
@@ -27,6 +27,7 @@ const deploy: DeployFunction = async ({
                     args: [
                         multisig,
                         deployer,
+                        bot,
                     ],
                 },
             },

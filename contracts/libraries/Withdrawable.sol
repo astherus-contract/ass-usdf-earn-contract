@@ -44,7 +44,7 @@ abstract contract Withdrawable is IWithdrawable {
         require(amount > 0, "invalid amount");
         if (emergency) {
             require(
-                st.emergencyWithdrawEnabled || !st.emergencyWithdrawWhitelist[msg.sender], 
+                st.emergencyWithdrawEnabled || st.emergencyWithdrawWhitelist[msg.sender], 
                 "not support emergency withdraw"
             );
         }
@@ -100,10 +100,10 @@ abstract contract Withdrawable is IWithdrawable {
     function _claimWithdraw(uint256[] calldata requestWithdrawNos) internal {
         Storage storage st = getStorage();
         require(st.withdrawEnabled == true, "withdraw paused");
-        for (uint i = 0; i < requestWithdrawNos.length; i = i ++) {
+        for (uint i = 0; i < requestWithdrawNos.length; i ++) {
             uint256 requestWithdrawNo = requestWithdrawNos[i];
             RequestWithdrawInfo memory requestWithdrawInfo = st.requestWithdraws[requestWithdrawNo];
-            require(requestWithdrawInfo.receiveAmount > 0 && requestWithdrawInfo.claimable == true, "not available");
+            require(requestWithdrawInfo.receiveAmount > 0 && requestWithdrawInfo.claimable, "not available");
             require(requestWithdrawInfo.receipt == msg.sender, "illegal sender");
 
             delete st.requestWithdraws[requestWithdrawNo];

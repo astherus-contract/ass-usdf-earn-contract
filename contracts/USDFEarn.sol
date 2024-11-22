@@ -76,6 +76,8 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         __ReentrancyGuard_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, TIMELOCK_ADDRESS);
+        // do some initialize and will renounce after initialize
+        _grantRole(DEFAULT_ADMIN_ROLE, _admin);
         _grantRole(ADMIN_ROLE, _admin);
         _grantRole(PAUSE_ROLE, _admin);
     }

@@ -8,7 +8,7 @@ const deploy: DeployFunction = async ({
     network,
 }) => {
     const { deploy } = deployments
-    const { deployer } = await getNamedAccounts()
+    const { deployer, multisig } = await getNamedAccounts()
 
     const Timelock = await ethers.getContract('Timelock');
     await deploy('asUSDF', {
@@ -16,7 +16,7 @@ const deploy: DeployFunction = async ({
         args: [
             TokenConfig(network).asUSDF.name, // name
             TokenConfig(network).asUSDF.symbol, // symbol
-            deployer, // _defaultAdmin
+            multisig, // _defaultAdmin
             Timelock.address //timelock
         ],
         log: true,

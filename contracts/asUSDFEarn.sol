@@ -25,6 +25,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
     bytes32 public constant BOT_ROLE = keccak256("BOT_ROLE");
+    bytes32 public constant REWARD_ROLE = keccak256("REWARD_ROLE");
 
     uint256 public constant EXCHANGE_PRICE_DECIMALS = 1e18;
 
@@ -72,6 +73,8 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         __ReentrancyGuard_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, TIMELOCK_ADDRESS);
+        // do some initialize and will renounce after initialize
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ADMIN_ROLE, admin);
         _grantRole(PAUSE_ROLE, admin);
 
@@ -152,10 +155,10 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        asUSDF.burn(msg.sender, amount);
         uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
         Withdrawable._doRequestWithdraw(amount, USDFAmount, true);
+        asUSDF.burn(address(this), amount);
     }
 
     function distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList)  external nonReentrant whenNotPaused onlyRole(BOT_ROLE) {
@@ -166,7 +169,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         Withdrawable._claimWithdraw(requestWithdrawNos);
     }
 
-    function dispatchReward(uint amount) external nonReentrant {
+    function dispatchReward(uint amount) external nonReentrant onlyRole(REWARD_ROLE) {
         if (getUnvestedAmount() > 0) {
             return;
         }

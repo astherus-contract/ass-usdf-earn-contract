@@ -9,7 +9,7 @@ const PROPOSER_ROLE = ethers.utils.id('PROPOSER_ROLE')
 const EXECUTOR_ROLE = ethers.utils.id('EXECUTOR_ROLE')
 const CANCELLER_ROLE = ethers.utils.id('CANCELLER_ROLE')
 
-async function delay(ms: number) {
+export async function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -22,7 +22,7 @@ export async function updateImplementation(
     const storage = `0x${(BigInt(ethers.utils.id('eip1967.proxy.implementation')) - 1n).toString(16)}`;
     const currentImplementation = hre.ethers.utils.defaultAbiCoder.decode(
         ['address'], 
-        await hre.ethers.provider.getStorage(contractAddress, storage)
+        await hre.ethers.provider.getStorageAt(contractAddress, storage)
     )[0];
 
     if (currentImplementation == newImplementation) {

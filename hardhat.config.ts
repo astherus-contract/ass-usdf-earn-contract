@@ -1,8 +1,9 @@
 import 'dotenv/config'
 
-import "@nomicfoundation/hardhat-toolbox";
+//import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
-import "@nomicfoundation/hardhat-ethers";
+import '@nomiclabs/hardhat-waffle'
+//import "@nomicfoundation/hardhat-ethers";
 import '@layerzerolabs/toolbox-hardhat'
 import '@nomiclabs/hardhat-ethers'
 import 'hardhat-deploy';
@@ -10,6 +11,7 @@ import "hardhat-deploy-ethers";
 import 'hardhat-abi-exporter';
 import 'hardhat-abi-exporter';
 import './tasks';
+import '@typechain/hardhat'
 
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 import { EndpointId } from '@layerzerolabs/lz-definitions'
@@ -82,12 +84,12 @@ const config: HardhatUserConfig = {
         USDT: {
             56: '0x55d398326f99059fF775485246999027B3197955',
             97: '0xB9EF9C975EBB606498d14B105a1619E89255c972',
+        },
+        bot: {
+            31337: 3,
+            56: '0x0000000000000000000000000000000000000000',
+            97: '0x0000000000000000000000000000000000000000',
         }
-    },
-    sourcify: {
-        // 无需指定 API key
-        // 默认关闭。
-        enabled: true
     },
     etherscan: {
         // npx hardhat verify --network sepolia <address> <Constructor argument>

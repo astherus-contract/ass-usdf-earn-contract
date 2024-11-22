@@ -38,7 +38,7 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         _disableInitializers();
     }
 
-    function initialize(address _admin, address _deployer) initializer public {
+    function initialize(address _admin, address _deployer, address _bot) initializer public {
         __Pausable_init();
         __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
@@ -49,6 +49,9 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         _grantRole(DEFAULT_ADMIN_ROLE, _deployer);
         _grantRole(ADMIN_ROLE, _admin);
         _grantRole(PAUSE_ROLE, _admin);
+        if (_bot != address(0)) {
+            grantRole(BOT_ROLE, _bot);
+        }
     }
 
     modifier onlyTimeLock() {
