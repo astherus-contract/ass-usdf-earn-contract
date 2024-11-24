@@ -1,10 +1,12 @@
 import { type DeployFunction } from 'hardhat-deploy/types'
 import { AsUSDFEarn, RewardDispatcher, USDFEarn, WithdrawVault } from '../typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import EarnConfig from '../config/earn.config';
 
 const deploy: DeployFunction = async ({
     getNamedAccounts,
     ethers,
+    network,
 }) => {
     const { deployer, multisig, bot } = await getNamedAccounts();
     const deployerSigner = await ethers.getSignerOrNull(deployer);
@@ -57,6 +59,11 @@ const deploy: DeployFunction = async ({
         const tx = await WithdrawVault.connect(deployerSigner!!).grantRole(ethers.utils.id('TRANSFER_ROLE'), asUSDFEarn.address);
         await tx.wait();
         console.log(`WithdrawVault grant TRANSFER_ROLE for asUSDFEarn: ${tx.hash}`)
+    }
+    if (!(await USDFEarn.burnCommissionRate()).eq(EarnConfig(network).USDF_BURN_COMMISSION_RATE)) {
+        const tx = await USDFEarn.connect(admin).updateBurnCommissionRate(EarnConfig(network).USDF_BURN_COMMISSION_RATE);
+        await tx.wait();
+        console.log(`USDFEarn: set burnCommissionRate to: ${EarnConfig(network).USDF_BURN_COMMISSION_RATE}: ${tx.hash}`);
     }
 
 }

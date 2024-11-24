@@ -15,11 +15,13 @@ import "./interface/IAsERC20.sol";
 import "./libraries/Withdrawable.sol";
 import "./interface/IWithdrawVault.sol";
 import "./interface/IUSDFEarn.sol";
+import "./interface/IAsUSDFEarn.sol";
 
 contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, Withdrawable, IUSDFEarn {
 
     using Address for address payable;
     using SafeERC20 for IERC20;
+    using SafeERC20 for IAsERC20;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
@@ -37,6 +39,8 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     address public immutable TIMELOCK_ADDRESS;
     IERC20 public immutable USDT;
     IAsERC20 public immutable USDF;
+    IAsERC20 public immutable AsUSDF;
+    IAsUSDFEarn public immutable AsUSDFEarn;
 
     uint256 public commissionRate;
     uint256 public USDFMaxSupply;
@@ -46,7 +50,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     uint256 public burnCommissionRate;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _timeLockAddress, IERC20 _USDT, IAsERC20 _USDF, IWithdrawVault _withdrawVault) 
+    constructor(address _timeLockAddress, IERC20 _USDT, IAsERC20 _USDF, IWithdrawVault _withdrawVault, IAsUSDFEarn _AsUSDFEarn) 
         Withdrawable(_USDT, _USDF, _withdrawVault) 
     {
         require(_timeLockAddress != address(0), "timeLockAddress cannot be a zero address");
@@ -56,6 +60,8 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         TIMELOCK_ADDRESS = _timeLockAddress;
         USDT = _USDT;
         USDF = _USDF;
+        AsUSDFEarn = _AsUSDFEarn;
+        AsUSDF = _AsUSDFEarn.asUSDF();
         _disableInitializers();
     }
 
@@ -152,13 +158,23 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
 
 
     function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
-        _mintUSDF(amountIn);
+        _mintUSDF(amountIn, msg.sender);
+    }
+
+    function mintAsUSDF(uint256 amountIn) external nonReentrant whenNotPaused {
+        uint USDFAmount = _mintUSDF(amountIn, address(this));
+        USDF.approve(address(AsUSDFEarn), USDFAmount);
+        uint asUSDFBalanceBefore = AsUSDF.balanceOf(address(this));
+        AsUSDFEarn.deposit(USDFAmount);
+        uint asUSDFBalanceAfter = AsUSDF.balanceOf(address(this));
+        AsUSDF.safeTransfer(msg.sender, asUSDFBalanceAfter - asUSDFBalanceBefore);
+        USDF.approve(address(AsUSDFEarn), 0);
     }
 
     /**
       * @dev mint USDF token
       */
-    function _mintUSDF(uint256 amountIn) private {
+    function _mintUSDF(uint256 amountIn, address _for) private returns (uint) {
         require(amountIn > 0, "invalid amount");
         require(USDTDepositEnabled, "Deposit is paused");
 
@@ -169,8 +185,9 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         uint256 USDFAmount =  amountIn * (1e4 - commissionRate) / 1e4;
         require(totalSupply + USDFAmount <= USDFMaxSupply, "The amount is too large");
 
-        USDF.mint(msg.sender, USDFAmount);
-        emit MintUSDF(msg.sender, USDT, USDF, amountIn, USDFAmount);
+        USDF.mint(_for, USDFAmount);
+        emit MintUSDF(_for, USDT, USDF, amountIn, USDFAmount);
+        return USDFAmount;
     }
 
     /**

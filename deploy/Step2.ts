@@ -8,7 +8,7 @@ const deploy: DeployFunction = async ({
     ethers,
     network,
 }) => {
-    const { deployer, multisig } = await getNamedAccounts();
+    const { deployer, multisig, bot, ceffu } = await getNamedAccounts();
     const deployerSigner = await ethers.getSignerOrNull(deployer);
     const multisigSigner = await ethers.getSignerOrNull(multisig);
     const USDF = await ethers.getContract<USDF>('USDF');
@@ -48,6 +48,21 @@ const deploy: DeployFunction = async ({
         const tx = await asUSDF.connect(admin).grantRole(ethers.utils.id('MINTER_AND_BURN_ROLE'), asUSDFEarn.address);
         await tx.wait();
         console.log(`asUSDF grant MINTER_AND_BURN_ROLE for asUSDFEarn: ${tx.hash}`)
+    }
+    if (!(await USDFEarn.hasRole(ethers.utils.id('BOT_ROLE'), bot))) {
+        const tx = await USDFEarn.connect(admin).grantRole(ethers.utils.id('BOT_ROLE'), bot);
+        await tx.wait();
+        console.log(`USDFEarn grant BOT_ROLE for ${bot}: ${tx.hash}`)
+    }
+    if (!(await USDFEarn.transferToCeffuEnabled())) {
+        const tx = await USDFEarn.connect(admin).updateTransferToCeffuEnabled(true);
+        await tx.wait();
+        console.log(`USDFEarn EnableTransferToCeffu: ${tx.hash}`)
+    }
+    if ((await USDFEarn.ceffuAddress()).toLowerCase() != ceffu.toLowerCase()) {
+        const tx = await USDFEarn.connect(admin).updateCeffuAddress(ceffu);
+        await tx.wait();
+        console.log(`USDFEarn set ceff to ${ceffu}: ${tx.hash}`)
     }
 }
 

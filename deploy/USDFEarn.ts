@@ -18,13 +18,15 @@ const deploy: DeployFunction = async ({
     const Timelock = await ethers.getContract('Timelock');
     const USDF = await ethers.getContract('USDF');
     const WithdrawVault = await ethers.getContract('WithdrawVault');
+    const asUSDFEarn = await ethers.getContract('asUSDFEarn');
     await deploy('USDFEarn', {
         from: deployer,
         args: [
             Timelock.address, 
             USDT ?? mockUSDT, 
             USDF.address,
-            WithdrawVault.address
+            WithdrawVault.address,
+            asUSDFEarn.address,
         ],
         log: true, 
         skipIfAlreadyDeployed: false,

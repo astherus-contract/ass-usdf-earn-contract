@@ -7,6 +7,7 @@ task('verify:USDFEarn', 'verify USDFEarn contract')
         const Timelock = await hre.ethers.getContract('Timelock')
         const WithdrawVault = await hre.ethers.getContract('WithdrawVault')
         const USDF = await hre.ethers.getContract('USDF')
+        const asUSDFEarn = await hre.ethers.getContract('asUSDFEarn');
         await hre.run(
             'verify:verify',
             {
@@ -15,7 +16,8 @@ task('verify:USDFEarn', 'verify USDFEarn contract')
                     Timelock.address, 
                     USDT, 
                     USDF.address,
-                    WithdrawVault.address
+                    WithdrawVault.address,
+                    asUSDFEarn.address,
                 ]
             }
         )
