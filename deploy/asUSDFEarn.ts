@@ -23,7 +23,7 @@ const deploy: DeployFunction = async ({
             EarnConfig(network).VESTING_PERIOD,
         ],
         log: true, 
-        skipIfAlreadyDeployed: false,
+        skipIfAlreadyDeployed: true,
         proxy: {
             proxyContract: 'UUPS',
             execute: {

@@ -36,9 +36,9 @@ export async function updateImplementation(
         .encodeFunctionData('upgradeToAndCall', [newImplementation, '0x'])
         .substring(10)
     
-    const { deployer } = await hre.getNamedAccounts();
-    const hasProposerRole = await Timelock.hasRole(PROPOSER_ROLE, deployer);
-    const hasExecutorRole = await Timelock.hasRole(EXECUTOR_ROLE, deployer);
+    const { deployer } = await hre.ethers.getNamedSigners();
+    const hasProposerRole = await Timelock.hasRole(PROPOSER_ROLE, deployer.address);
+    const hasExecutorRole = await Timelock.hasRole(EXECUTOR_ROLE, deployer.address);
     const minDelay = await Timelock.getMinDelay();
 
     if (hasProposerRole) {
