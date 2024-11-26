@@ -30,7 +30,7 @@ const deploy: DeployFunction = async ({
             asUSDFEarn.address,
         ],
         log: true, 
-        skipIfAlreadyDeployed: false,
+        skipIfAlreadyDeployed: true,
     });
 }
 

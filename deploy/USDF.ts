@@ -33,7 +33,7 @@ const deploy: DeployFunction = async ({
             Timelock.address //timelock
         ],
         log: true,
-        skipIfAlreadyDeployed: false,
+        skipIfAlreadyDeployed: true,
     })
 }
 

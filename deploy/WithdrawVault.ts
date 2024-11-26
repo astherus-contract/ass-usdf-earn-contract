@@ -14,7 +14,7 @@ const deploy: DeployFunction = async ({
             Timelock.address
         ],
         log: true, 
-        skipIfAlreadyDeployed: false,
+        skipIfAlreadyDeployed: true,
         proxy: {
             proxyContract: 'UUPS',
             execute: {
