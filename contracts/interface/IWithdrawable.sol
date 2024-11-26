@@ -10,6 +10,7 @@ interface IWithdrawable {
         uint256 withdrawAmount;
         uint256 receiveAmount;
         uint256 withdrawTime;
+        uint256 exchangePrice;
         bool claimable;
         address receipt;
         bool emergency;

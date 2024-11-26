@@ -30,6 +30,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     event UpdateUSDTDepositEnabled(bool oldUSDTDepositEnabled, bool newUSDTDepositEnabled);
     event UpdateUSDFMaxSupply(uint256 oldUSDFMaxSupply, uint256 newUSDFMaxSupply);
     event UpdateCommissionRate(uint256 oldCommissionRate, uint256 newCommissionRate);
+    event UpdateBurnCommissionRate(uint256 oldCommissionRate, uint256 newCommissionRate);
     event UpdateCeffuAddress(address oldCeffuAddress, address newCeffuAddress);
     event UpdateTransferToCeffuEnabled(bool oldTransferToCeffuEnabled, bool newTransferToCeffuEnabled);
     event TransferToCeffu(IERC20 indexed token, uint256 USDTAmount, address ceffuAddress);
@@ -125,7 +126,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         require(oldCommissionRate != _commissionRate, "newCommissionRate can not be equal oldCommissionRate");
 
         burnCommissionRate = _commissionRate;
-        emit UpdateCommissionRate(oldCommissionRate, burnCommissionRate);
+        emit UpdateBurnCommissionRate(oldCommissionRate, burnCommissionRate);
     }
 
     function updateUSDFMaxSupply(uint256 _USDFMaxSupply) external onlyRole(ADMIN_ROLE) {
@@ -211,13 +212,16 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
     }
 
     function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        //the decimal of price is 1e18, and fix to 1 but sub burnCommissionRate
+        uint price = 1e18 * (1e4 - burnCommissionRate) / 1e4;
         uint256 USDTAmount =  amount * (1e4 - burnCommissionRate) / 1e4;
-        Withdrawable._doRequestWithdraw(amount, USDTAmount, false);
+        Withdrawable._doRequestWithdraw(amount, USDTAmount, price, false);
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
+        uint price = 1e18 * (1e4 - burnCommissionRate) / 1e4;
         uint256 USDTAmount =  amount * (1e4 - burnCommissionRate) / 1e4;
-        Withdrawable._doRequestWithdraw(amount, USDTAmount, true);
+        Withdrawable._doRequestWithdraw(amount, USDTAmount, price, true);
     }
 
     function distributeWithdraw(DistributeWithdrawInfo[] calldata distributeWithdrawInfoList)  external nonReentrant whenNotPaused onlyRole(BOT_ROLE) {

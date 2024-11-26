@@ -131,7 +131,22 @@ const deploy: DeployFunction = async ({
             console.log(`USDFEarn: We Should set burnCommissionRate Mannualy`);
         }
     }
-
+    // Check MaxRewardPercent
+    if (((await asUSDFEarn.maxRewardPercent()).eq(ethers.constants.Zero))) {
+        let admin: SignerWithAddress | undefined;
+        if (deployerSigner && await asUSDFEarn.hasRole(ADMIN_ROLE, deployer)) {
+            admin = deployerSigner;
+        } else if (multisigSigner && await asUSDFEarn.hasRole(ADMIN_ROLE, multisig)) {
+            admin = multisigSigner;
+        }
+        if (admin) {
+            const tx = await asUSDFEarn.connect(admin).updateMaxRewardPercent(EarnConfig(network).MAX_REWARD_PERCENT);
+            await tx.wait();
+            console.log(`asUSDFEarn: set maxRewardPercent to: ${EarnConfig(network).MAX_REWARD_PERCENT}: ${tx.hash}`);
+        } else {
+            console.log(`asUSDFEarn: We Should set maxRewardPercent Mannualy`);
+        }
+    }
 }
 
 deploy.tags = ['Step3']

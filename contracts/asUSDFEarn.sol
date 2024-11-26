@@ -31,7 +31,9 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
 
     event AddToken(IERC20 indexed asUSDF, IERC20 indexed USDF);
     event UpdateUSDFDepositEnabled(bool oldUSDFDepositEnabled, bool newUSDFDepositEnabled);
+    event UpdateMaxRewardPercent(uint oldValue, uint newValue);
     event MintasUSDF(address indexed sender, IERC20 indexed USDFAddress, IERC20 indexed asUSDFAddress, uint256 amountIn, uint256 asUSDFAmount, uint256 exchangePrice);
+    event RewardDispatched(uint amount, uint startTime, uint period);
 
     address public immutable TIMELOCK_ADDRESS;
     IAsERC20 public immutable USDF;
@@ -41,6 +43,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     bool public USDFDepositEnabled;
     uint public lastDispatchTime;
     uint public lastReward;
+    uint public maxRewardPercent;
 
     constructor(address _timeLockAddress, IAsERC20 _USDF, IAsERC20 _asUSDF, IWithdrawVault _withdrawVault, uint _vestingPeriod) 
         Withdrawable(_USDF, _asUSDF, _withdrawVault)
@@ -100,6 +103,13 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
         emit UpdateUSDFDepositEnabled( oldUSDFDepositEnabled, USDFDepositEnabled);
     }
 
+    function updateMaxRewardPercent(uint newValue) external onlyRole(ADMIN_ROLE) {
+        uint oldValue = maxRewardPercent;
+        require(oldValue != newValue, "already set");
+        maxRewardPercent = newValue;
+        emit UpdateMaxRewardPercent(oldValue, newValue);
+    }
+
     function deposit(uint256 amountIn) external nonReentrant whenNotPaused {
         _mintasUSDF(amountIn);
     }
@@ -149,16 +159,18 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function requestWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
+        uint price = exchangePrice();
+        uint USDFAmount = amount * price / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
-        Withdrawable._doRequestWithdraw(amount, USDFAmount, false);
+        Withdrawable._doRequestWithdraw(amount, USDFAmount, price, false);
         asUSDF.burn(address(this), amount);
     }
     
     function requestEmergencyWithdraw(uint256 amount) external nonReentrant whenNotPaused {
-        uint USDFAmount = amount * exchangePrice() / EXCHANGE_PRICE_DECIMALS;
+        uint price = exchangePrice();
+        uint USDFAmount = amount * price / EXCHANGE_PRICE_DECIMALS;
         USDF.safeTransfer(address(WITHDRAW_VAULT), USDFAmount);
-        Withdrawable._doRequestWithdraw(amount, USDFAmount, true);
+        Withdrawable._doRequestWithdraw(amount, USDFAmount, price, true);
         asUSDF.burn(address(this), amount);
     }
 
@@ -171,11 +183,14 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function dispatchReward(uint amount) external nonReentrant onlyRole(REWARD_ROLE) {
+        //限制最大值，USDF发行量的百分比
         if (getUnvestedAmount() > 0) {
             return;
         }
+        require(amount <= USDF.totalSupply() * maxRewardPercent / EXCHANGE_PRICE_DECIMALS, "too much");
         lastDispatchTime = block.timestamp;
         USDF.safeTransferFrom(msg.sender, address(this), amount);
         lastReward = amount;
+        emit RewardDispatched(amount, block.timestamp, VESTING_PERIOD);
     }
 }

@@ -38,7 +38,7 @@ abstract contract Withdrawable is IWithdrawable {
         WITHDRAW_VAULT = _withdrawVault;
     }
 
-    function _doRequestWithdraw(uint amount, uint receiveAmount,  bool emergency) internal {
+    function _doRequestWithdraw(uint amount, uint receiveAmount,  uint exchangePrice, bool emergency) internal {
         Storage storage st = getStorage();
         require(st.withdrawEnabled == true, "withdraw paused");
         require(amount > 0, "invalid amount");
@@ -56,6 +56,7 @@ abstract contract Withdrawable is IWithdrawable {
             withdrawAmount: amount,
             receiveAmount: receiveAmount,
             withdrawTime: block.timestamp,
+            exchangePrice: exchangePrice,
             claimable: false,
             receipt: msg.sender,
             emergency: emergency
