@@ -20,6 +20,7 @@ contract asUSDF is AccessControl, ERC20Pausable, ERC20Permit {
         address _timelockAddress
     ) ERC20(_name, _symbol)  ERC20Permit(_name){
         _grantRole(DEFAULT_ADMIN_ROLE, _timelockAddress);
+        // do some initialize and will renounce after initialize
         _grantRole(DEFAULT_ADMIN_ROLE, _defaultAdmin);
         _grantRole(ADMIN_ROLE, _defaultAdmin);
     }

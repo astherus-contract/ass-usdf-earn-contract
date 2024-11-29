@@ -1,24 +1,30 @@
-// Get the environment configuration from .env file
-//
-// To make use of automatic environment setup:
-// - Duplicate .env.example file and name it .env
-// - Fill in the environment variables
 import 'dotenv/config'
 
-import "@nomicfoundation/hardhat-toolbox";
+//import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
-import "@nomicfoundation/hardhat-ethers";
+import '@nomiclabs/hardhat-waffle'
+//import "@nomicfoundation/hardhat-ethers";
 import '@layerzerolabs/toolbox-hardhat'
 import '@nomiclabs/hardhat-ethers'
 import 'hardhat-deploy';
 import "hardhat-deploy-ethers";
 import 'hardhat-abi-exporter';
 import 'hardhat-abi-exporter';
-require('./tasks/index.js');
+//import './tasks';
+import '@typechain/hardhat'
 
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 import { EndpointId } from '@layerzerolabs/lz-definitions'
 
+declare global {
+    namespace NodeJS {
+        interface ProcessEnv {
+            MNEMONICS: string,
+            PRIVATE_KEY: string,
+            ETHERSCAN_KEY_BSC: string,
+        }
+    }
+}
 
 // Set your preferred authentication method
 //
@@ -35,16 +41,7 @@ const accounts: HttpNetworkAccountsUserConfig | undefined = MNEMONIC
         ? [PRIVATE_KEY]
         : undefined
 
-if (accounts == null) {
-    console.warn(
-        'Could not find MNEMONIC or PRIVATE_KEY environment variables. It will not be possible to execute transactions in your example.'
-    )
-}
-
 const config: HardhatUserConfig = {
-    paths: {
-        cache: 'cache/hardhat',
-    },
     solidity: {
         compilers: [
             {
@@ -67,13 +64,6 @@ const config: HardhatUserConfig = {
             accounts,
             tags: ['testnet']
         },
-        'bscMainnetTest': {
-            eid: EndpointId.BSC_V2_MAINNET,
-            url: process.env.RPC_URL_SEPOLIA || 'https://bsc-dataseed.binance.org/',
-            chainId: 56,
-            accounts,
-            tags: ['mainnet']
-        },
         'bscMainnet': {
             eid: EndpointId.BSC_V2_MAINNET,
             url: process.env.RPC_URL_SEPOLIA || 'https://bsc-dataseed.binance.org/',
@@ -81,69 +71,38 @@ const config: HardhatUserConfig = {
             accounts,
             tags: ['mainnet']
         },
-        'sepoliaTestnet': {
-            eid: EndpointId.SEPOLIA_V2_TESTNET,
-            url: process.env.RPC_URL_SEPOLIA || 'https://rpc.sepolia.org/',
-            accounts,
-            tags: ['testnet']
-        },
     },
     namedAccounts: {
         deployer: {
             default: 0, // wallet address of index[0], of the mnemonic in .env
         },
         multisig: {
-            default: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
+            default: 1,
             56: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
-            1: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe'
+            97: '0xa8c0C6Ee62F5AD95730fe23cCF37d1c1FFAA1c3f',
         },
-        proposer: {
-            default: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
-            56: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
-            1: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe'
+        USDT: {
+            56: '0x55d398326f99059fF775485246999027B3197955',
+            97: '0xB9EF9C975EBB606498d14B105a1619E89255c972',
         },
-        executor: {
-            default: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
-            56: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
-            1: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe'
-        }
-    },
-    sourcify: {
-        // 无需指定 API key
-        // 默认关闭。
-        enabled: true
+        bot: {
+            31337: 3,
+            56: '0x0000000000000000000000000000000000000000',
+            97: '0x0000000000000000000000000000000000000000',
+        },
+        ceffu: {
+            31337: 4,
+            56: '0x0000000000000000000000000000000000000000',
+            97: '0x0000000000000000000000000000000000000000',
+        },
     },
     etherscan: {
         // npx hardhat verify --network sepolia <address> <Constructor argument>
         apiKey: {
             // 查看有哪些 apiKey 配置的命令: npx hardhat verify --list-networks
-            bsc: "TDID7NM35CIQ35RU4TUV5XQV9GBDKCBJYI",
-            bscTestnet: "TDID7NM35CIQ35RU4TUV5XQV9GBDKCBJYI",
-            arbitrumOne: "P2VMXQIWGWYHE95AHGAFT1P1IN37FJZUB2",
-            arbitrumSepolia: "P2VMXQIWGWYHE95AHGAFT1P1IN37FJZUB2",
-            sepolia: "A6KG1SUCYWFDX5MC6YMR7TD1IYNRNMVKPD",
-            mainnet: "A6KG1SUCYWFDX5MC6YMR7TD1IYNRNMVKPD"
+            bsc: process.env.ETHERSCAN_KEY_BSC,
+            bscTestnet: process.env.ETHERSCAN_KEY_BSC,
         },
-        // 要了解如何添加自定义网络，请按照以下说明操作： https://hardhat.org/verify-custom-networks
-        // customChains: [{
-        //     network: "opbnb", chainId: 204,
-        //     urls: {
-        //         apiURL: "https://api-opbnb.bscscan.com/api",
-        //         browserURL: "https://opbnb.bscscan.com",
-        //         // 在 https://opbnbscan.com 上验证时使用下面两个
-        //         // apiURL: "https://open-platform.nodereal.io/601cc1bd40144cfdbbca9a9f6c2a61f0/op-bnb-mainnet/contract/",
-        //         // browserURL: "https://opbnbscan.com"
-        //     }
-        // }, {
-        //     network: "opbnbTestnet", chainId: 5611,
-        //     urls: {
-        //         apiURL: "https://api-opbnb-testnet.bscscan.com/api",
-        //         browserURL: "https://opbnb-testnet.bscscan.com",
-        //         // 在 https://testnet.opbnbscan.com 上验证时使用下面两个
-        //         // apiURL: "https://open-platform.nodereal.io/7c6721489d57430fbe12e979e3248c8c/op-bnb-testnet/contract/",
-        //         // browserURL: "https://testnet.opbnbscan.com"
-        //     }
-        // }]
     }
 }
 

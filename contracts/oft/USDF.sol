@@ -26,6 +26,8 @@ contract USDF is TransferLimiter, OFT, AccessControl, ERC20Pausable, ERC20Permit
         address _timelockAddress
     ) OFT(_name, _symbol, _lzEndpoint, _defaultAdmin) Ownable(_timelockAddress) ERC20Permit(_name){
         _grantRole(DEFAULT_ADMIN_ROLE, _timelockAddress);
+        // do some initialize and will renounce after initialize
+        _grantRole(DEFAULT_ADMIN_ROLE, _defaultAdmin);
         _grantRole(ADMIN_ROLE, _defaultAdmin);
 
         _setTransferLimitConfigs(_transferLimitConfigs);
