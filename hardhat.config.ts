@@ -3,6 +3,11 @@ import fs from 'fs'
 import path, { dirname } from 'path'
 import "@nomicfoundation/hardhat-verify";
 import '@nomiclabs/hardhat-waffle'
+
+//import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-verify";
+import '@nomiclabs/hardhat-waffle'
+//import "@nomicfoundation/hardhat-ethers";
 import '@layerzerolabs/toolbox-hardhat'
 import '@nomiclabs/hardhat-ethers'
 import 'hardhat-deploy';

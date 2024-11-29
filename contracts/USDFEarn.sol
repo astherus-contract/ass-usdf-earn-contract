@@ -63,6 +63,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         USDF = _USDF;
         AsUSDFEarn = _AsUSDFEarn;
         AsUSDF = _AsUSDFEarn.asUSDF();
+        require(address(AsUSDF) != address(0), "illegal AsUSDF");
         _disableInitializers();
     }
 
