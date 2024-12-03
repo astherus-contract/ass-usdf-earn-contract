@@ -70,14 +70,14 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
     }
 
     function mintReward(uint amount) external onlyRole(BOT_ROLE) {
-        USDT.approve(address(USDFEarn), amount);
+        USDT.forceApprove(address(USDFEarn), amount);
         USDFEarn.deposit(amount);
-        USDT.approve(address(USDFEarn), 0);
+        USDT.forceApprove(address(USDFEarn), 0);
     }
 
     function dispatchReward(uint amount) external onlyRole(BOT_ROLE) {
-        USDF.approve(address(AsUSDFEarn), amount);
+        USDF.forceApprove(address(AsUSDFEarn), amount);
         AsUSDFEarn.dispatchReward(amount);
-        USDF.approve(address(AsUSDFEarn), 0);
+        USDF.forceApprove(address(AsUSDFEarn), 0);
     }
 }
