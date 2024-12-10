@@ -31,10 +31,10 @@ contract RewardDispatcher is Initializable, AccessControlEnumerableUpgradeable, 
         TIMELOCK_ADDRESS = _timeLock;
         USDFEarn = _USDFEarn;
         AsUSDFEarn = _AsUSDFEarn;
-        USDT = _USDFEarn.USDT();
-        require(_AsUSDFEarn.USDF() == _USDFEarn.USDF(), "earn not match");
-        USDF = _USDFEarn.USDF();
-        asUSDF = _AsUSDFEarn.asUSDF();
+        USDT = _USDFEarn.USDTAddress();
+        require(_AsUSDFEarn.USDFAddress() == _USDFEarn.USDFAddress(), "earn not match");
+        USDF = _USDFEarn.USDFAddress();
+        asUSDF = _AsUSDFEarn.asUSDFAddress();
         _disableInitializers();
     }
 

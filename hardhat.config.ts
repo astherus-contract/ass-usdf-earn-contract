@@ -26,6 +26,10 @@ declare global {
             ETHERSCAN_KEY_BSC: string,
             TESTNET_DEPLOYER: string,
             MAINNET_DEPLOYER: string,
+            FORKING_ENABLED: boolean | undefined,
+            FORKING_URL: string | undefined,
+            FORKING_BLOCK_NUMBER: number | undefined,
+            HARDHAT_CHAIN_ID: number | undefined,
         }
     }
 }
@@ -58,6 +62,15 @@ const config: HardhatUserConfig = {
         ],
     },
     networks: {
+        hardhat: {
+            forking: {
+                enabled: process.env.FORKING_ENABLED ? Boolean(process.env.FORKING_ENABLED) : false,
+                url: process.env.FORKING_URL ?? "",
+                blockNumber: process.env.FORKING_BLOCK_NUMBER ? Number(process.env.FORKING_BLOCK_NUMBER) : undefined,
+            },
+            chainId: process.env.HARDHAT_CHAIN_ID ? Number(process.env.HARDHAT_CHAIN_ID) : 31337,
+            tags: ["local"],
+        },
         'bscTestnet': {
             eid: EndpointId.BSC_V2_TESTNET,
             url: process.env.RPC_URL_SEPOLIA || 'https://data-seed-prebsc-1-s1.bnbchain.org:8545/',
@@ -90,7 +103,7 @@ const config: HardhatUserConfig = {
         },
         bot: {
             31337: 3,
-            56: '0xF68Ec3D8e8C4d26e63B91b16432bb5d5a09EFaFe',
+            56: '0xB4AACDA6F49b9c140ee1E9b74F5A982364F3D8ae',
             97: process.env.TESTNET_DEPLOYER ? process.env.TESTNET_DEPLOYER : 0,
         },
         ceffu: {
