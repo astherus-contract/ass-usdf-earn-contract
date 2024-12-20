@@ -5,8 +5,8 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './IAsERC20.sol';
 
 interface IAsUSDFEarn {
-    function USDFAddress() external view returns (IAsERC20);
-    function asUSDFAddress() external view returns (IAsERC20);
+    function USDF() external view returns (IAsERC20);
+    function asUSDF() external view returns (IAsERC20);
     function dispatchReward(uint amount) external;
     function deposit(uint256 amountIn) external;
 }

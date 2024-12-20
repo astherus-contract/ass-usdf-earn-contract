@@ -17,7 +17,7 @@ import "./interface/IWithdrawVault.sol";
 import "./interface/IUSDFEarn.sol";
 import "./interface/IAsUSDFEarn.sol";
 
-contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, Withdrawable/*, IUSDFEarn*/ {
+contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, Withdrawable, IUSDFEarn {
 
     using Address for address payable;
     using SafeERC20 for IERC20;
@@ -62,7 +62,7 @@ contract USDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerable
         USDT = _USDT;
         USDF = _USDF;
         AsUSDFEarn = _AsUSDFEarn;
-        AsUSDF = _AsUSDFEarn.asUSDFAddress();
+        AsUSDF = _AsUSDFEarn.asUSDF();
         require(address(AsUSDF) != address(0), "illegal AsUSDF");
         _disableInitializers();
     }
