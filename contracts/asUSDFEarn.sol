@@ -104,6 +104,7 @@ contract asUSDFEarn is Initializable, PausableUpgradeable, AccessControlEnumerab
     }
 
     function updateMaxRewardPercent(uint newValue) external onlyRole(ADMIN_ROLE) {
+        require(newValue <= EXCHANGE_PRICE_DECIMALS, "illegal value");
         uint oldValue = maxRewardPercent;
         require(oldValue != newValue, "already set");
         maxRewardPercent = newValue;
